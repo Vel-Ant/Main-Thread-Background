@@ -74,12 +74,17 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun likeById(id: Long) {
         thread {
-            val post = repository.likeById(id)
-
             val old = _data.value?.posts.orEmpty()
-            _postCreated.postValue(Unit)
-//            post.copy(likes = if (post.likedByMe) post.likes - 1 else post.likes + 1,
-//                likedByMe = !post.likedByMe)
+            _data.postValue(
+                _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                    .mapNotNull {
+                        if (it.id == id) it.copy(
+                            likes = it.likes + 1,
+                            likedByMe = true
+                        ) else it
+                    }
+                )
+            )
             try {
                 repository.likeById(id)
             } catch (e: IOException) {
@@ -88,6 +93,26 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun unlikeById(id: Long) {
+        thread {
+            val old = _data.value?.posts.orEmpty()
+            _data.postValue(
+                _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                    .mapNotNull {
+                        if (it.id == id) it.copy(
+                            likes = it.likes -1,
+                            likedByMe = false
+                        ) else it
+                    }
+                )
+            )
+            try {
+                repository.unlikeById(id)
+            } catch (e: IOException) {
+                _data.postValue(_data.value?.copy(posts = old))
+            }
+        }
+    }
     fun removeById(id: Long) {
         thread {
             // Оптимистичная модель
