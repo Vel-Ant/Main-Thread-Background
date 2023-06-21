@@ -73,20 +73,16 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) {
+        val old = _data.value?.posts.orEmpty()
         thread {
-            val old = _data.value?.posts.orEmpty()
-            _data.postValue(
-                _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                    .mapNotNull {
-                        if (it.id == id) it.copy(
-                            likes = it.likes + 1,
-                            likedByMe = true
-                        ) else it
-                    }
-                )
-            )
             try {
-                repository.likeById(id)
+                _data.postValue(
+                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                        .map {
+                            if (it.id == id) repository.likeById(id) else it
+                        }
+                    )
+                )
             } catch (e: IOException) {
                 _data.postValue(_data.value?.copy(posts = old))
             }
@@ -94,20 +90,16 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun unlikeById(id: Long) {
+        val old = _data.value?.posts.orEmpty()
         thread {
-            val old = _data.value?.posts.orEmpty()
-            _data.postValue(
-                _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                    .mapNotNull {
-                        if (it.id == id) it.copy(
-                            likes = it.likes -1,
-                            likedByMe = false
-                        ) else it
-                    }
-                )
-            )
             try {
-                repository.unlikeById(id)
+                _data.postValue(
+                    _data.value?.copy(posts = _data.value?.posts.orEmpty()
+                        .map {
+                            if (it.id == id) repository.unlikeById(id) else it
+                        }
+                    )
+                )
             } catch (e: IOException) {
                 _data.postValue(_data.value?.copy(posts = old))
             }
