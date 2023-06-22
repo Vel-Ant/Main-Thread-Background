@@ -50,7 +50,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value?.let {
             repository.saveAsync(it, object : PostRepository.RepositoryCallback<Unit> {
                 override fun onSuccess(value: Unit) {
-                    _postCreated.postValue(Unit)
+                    _postCreated.postValue(value)
                 }
 
                 override fun onError() {
@@ -83,10 +83,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.postValue(
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .map {
-                            if (it.id == id) it.copy(
-                                likes = it.likes + 1,
-                                likedByMe = true
-                            ) else it
+                            if (it.id == id) value
+                            else it
                         }
                     )
                 )
@@ -106,10 +104,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.postValue(
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .map {
-                            if (it.id == id) it.copy(
-                                likes = it.likes - 1,
-                                likedByMe = false
-                            ) else it
+                            if (it.id == id) value else it
                         }
                     )
                 )
