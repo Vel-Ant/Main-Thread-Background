@@ -1,4 +1,4 @@
-package ru.netology.nmedia.service
+package ru.netology.nmedia.model.service
 
 import android.Manifest
 import android.app.Notification

@@ -1,6 +1,7 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
@@ -9,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.imageview.LoadImageAttachment
+import ru.netology.nmedia.imageview.LoadImageAvatar
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -42,9 +45,16 @@ class PostViewHolder(
             author.text = post.author
             published.text = post.published
             content.text = post.content
-            // в адаптере
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
+            avatar.LoadImageAvatar(url = "http://10.0.2.2:9999/avatars/${post.authorAvatar}")
+
+            if (post.attachment != null) {
+                imageAttachment.visibility = View.VISIBLE
+                imageAttachment.LoadImageAttachment(url = "http://10.0.2.2:9999/images/${post.attachment?.url}")
+            } else {
+                imageAttachment.visibility = View.GONE
+            }
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
@@ -55,12 +65,9 @@ class PostViewHolder(
                                 onInteractionListener.onRemove(post)
                                 true
                             }
+
                             R.id.edit -> {
                                 onInteractionListener.onEdit(post)
-                                true
-                            }
-                            R.id.menu_refresh -> {
-                                onInteractionListener.onLoadPost()
                                 true
                             }
 
