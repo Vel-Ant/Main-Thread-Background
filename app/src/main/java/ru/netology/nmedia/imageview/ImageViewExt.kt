@@ -4,7 +4,7 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 
-fun ImageView.LoadImageAvatar(url: String) {
+fun ImageView.loadImageAvatar(url: String) {
     Glide.with(this)
         .load(url)
         .placeholder(R.drawable.ic_loading_100dp)
@@ -14,7 +14,7 @@ fun ImageView.LoadImageAvatar(url: String) {
         .into(this)
 }
 
-fun ImageView.LoadImageAttachment(url: String) {
+fun ImageView.loadImageAttachment(url: String) {
     Glide.with(this)
         .load(url)
         .timeout(6_000)

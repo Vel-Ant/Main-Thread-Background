@@ -6,6 +6,7 @@ import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.*
+import ru.netology.nmedia.util.AttachmentType
 import ru.netology.nmedia.util.SingleLiveEvent
 
 
@@ -17,7 +18,7 @@ private val empty = Post(
     likedByMe = false,
     likes = 0,
     published = "",
-    attachment = Attachment("", " ")
+    attachment = Attachment("", " ", AttachmentType.IMAGE)
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
