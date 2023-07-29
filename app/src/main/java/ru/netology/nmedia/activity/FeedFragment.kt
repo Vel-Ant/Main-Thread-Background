@@ -81,6 +81,9 @@ class FeedFragment : Fragment() {
                 }
             } else {
                 binding.retryButton.visibility = View.GONE
+                binding.error300.visibility = View.GONE
+                binding.error400.visibility = View.GONE
+                binding.error500.visibility = View.GONE
             }
         }
 

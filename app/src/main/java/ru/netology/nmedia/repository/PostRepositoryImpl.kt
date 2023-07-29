@@ -5,6 +5,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.errors.NumberResponseError
 import ru.netology.nmedia.model.FeedModel
 
 class PostRepositoryImpl : PostRepository {
@@ -26,8 +27,8 @@ class PostRepositoryImpl : PostRepository {
             .enqueue(object : Callback<List<Post>> {
                 override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                     if (!response.isSuccessful) {
-                        FeedModel(codeResponse = response.code())
-                        callback.onError(RuntimeException(response.errorBody()?.string()))
+                        callback.onError(NumberResponseError(response.code()))
+//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
 
@@ -54,8 +55,8 @@ class PostRepositoryImpl : PostRepository {
             .enqueue(object : Callback<Post> {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (!response.isSuccessful) {
-                        FeedModel(codeResponse = response.code())
-                        callback.onError(RuntimeException(response.errorBody()?.string()))
+                        callback.onError(NumberResponseError(response.code()))
+//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
                     val post = response.body()
@@ -80,8 +81,8 @@ class PostRepositoryImpl : PostRepository {
             .enqueue(object : Callback<Post> {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (!response.isSuccessful) {
-                        FeedModel(codeResponse = response.code())
-                        callback.onError(RuntimeException(response.errorBody()?.string()))
+                        callback.onError(NumberResponseError(response.code()))
+//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
                     val post = response.body()
@@ -106,8 +107,8 @@ class PostRepositoryImpl : PostRepository {
             .enqueue(object : Callback<Post> {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (!response.isSuccessful) {
-                        FeedModel(codeResponse = response.code())
-                        callback.onError(RuntimeException(response.errorBody()?.string()))
+                        callback.onError(NumberResponseError(response.code()))
+//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
 
@@ -133,8 +134,8 @@ class PostRepositoryImpl : PostRepository {
             .enqueue(object : Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                     if (!response.isSuccessful) {
-                        FeedModel(codeResponse = response.code())
-                        callback.onError(RuntimeException(response.errorBody()?.string()))
+                        callback.onError(NumberResponseError(response.code()))
+//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
 

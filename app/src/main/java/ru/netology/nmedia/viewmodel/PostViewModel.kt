@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.*
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.errors.NumberResponseError
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.util.AttachmentType
@@ -43,7 +44,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
-                _data.value = FeedModel(error = true)
+                if (exception is NumberResponseError) {
+                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                } else {
+                    _data.value = FeedModel(error = true)
+                }
             }
         })
     }
@@ -56,7 +61,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 override fun onError(exception: Exception) {
-                    _data.value = FeedModel(error = true)
+                    if (exception is NumberResponseError) {
+                        _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                    } else {
+                        _data.value = FeedModel(error = true)
+                    }
                 }
             })
         }
@@ -78,7 +87,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) {
-        val old = _data.value?.posts.orEmpty()
         repository.likeById(id, object : PostRepository.RepositoryCallback<Post> {
             override fun onSuccess(value: Post) {
                 _data.postValue(
@@ -91,14 +99,16 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
-//                _data.postValue(_data.value?.copy(posts = old))
-                _data.value = FeedModel(error = true)
+                if (exception is NumberResponseError) {
+                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                } else {
+                    _data.value = FeedModel(error = true)
+                }
             }
         })
     }
 
     fun unlikeById(id: Long) {
-        val old = _data.value?.posts.orEmpty()
         repository.unlikeById(id, object : PostRepository.RepositoryCallback<Post> {
             override fun onSuccess(value: Post) {
                 _data.postValue(
@@ -111,15 +121,16 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
-//                _data.postValue(_data.value?.copy(posts = old))
-                _data.value = FeedModel(error = true)
+                if (exception is NumberResponseError) {
+                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                } else {
+                    _data.value = FeedModel(error = true)
+                }
             }
         })
     }
 
     fun removeById(id: Long) {
-        val old = _data.value?.posts.orEmpty()
-
         repository.removeById(id, object : PostRepository.RepositoryCallback<Unit> {
             override fun onSuccess(value: Unit) {
                 _data.postValue(
@@ -130,8 +141,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
-//                _data.postValue(_data.value?.copy(posts = old))
-                _data.value = FeedModel(error = true)
+                if (exception is NumberResponseError) {
+                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                } else {
+                    _data.value = FeedModel(error = true)
+                }
             }
         })
     }
