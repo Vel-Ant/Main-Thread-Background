@@ -15,7 +15,10 @@
     <string name="add_post">Добавить пост</string>
     <string name="retry_loading">Повторить</string>
     <string name="empty_posts">Постов нет.\nЕсли создадите новый пост, то он появится здесь</string>
-    <string name="error_loading">Что-то пошло не так. Попробуйте позднее</string>
+    <string name="anotherError">Что-то пошло не так. Попробуйте позднее</string>
+    <string name="error300_loading">Ошибка. Ресурс перемещен.</string>
+    <string name="error400_loading">Ошибка запроса. Проверьте сетевое подключение</string>
+    <string name="error500_loading">Ошибка сервера. Попробуйте повторить запрос</string>
     <string name="save">Сохранить</string>
     <string name="google_play_unavailable">Google Api Недоступно</string>
     <string name="notification_user_liked">%1$s поставил лайк посту %2$s</string>

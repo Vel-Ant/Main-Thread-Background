@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
@@ -30,6 +31,9 @@ class FeedFragment : Fragment() {
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
                 viewModel.edit(post)
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_newPostFragment,
+                    Bundle().apply { textArg = post.content })
             }
 
             override fun onLike(post: Post) {
@@ -64,9 +68,20 @@ class FeedFragment : Fragment() {
         viewModel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
             binding.progress.isVisible = state.loading
-            binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
             binding.swiperefresh.isRefreshing = state.refreshing
+
+            if (state.error) {
+                binding.retryButton.visibility = View.VISIBLE
+                when (state.codeResponse) {
+                    in 300..399 -> binding.error300.visibility = View.VISIBLE
+                    in 400..499 -> binding.error400.visibility = View.VISIBLE
+                    in 500..599 -> binding.error500.visibility = View.VISIBLE
+                    else -> binding.anotherError.visibility = View.VISIBLE
+                }
+            } else {
+                binding.retryButton.visibility = View.GONE
+            }
         }
 
         binding.retryButton.setOnClickListener {

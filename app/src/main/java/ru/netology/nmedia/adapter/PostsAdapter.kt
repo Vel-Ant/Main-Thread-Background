@@ -7,14 +7,12 @@ import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import okhttp3.MediaType.Companion.toMediaType
+import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.imageview.loadImageAttachment
 import ru.netology.nmedia.imageview.loadImageAvatar
-import ru.netology.nmedia.repository.PostRepositoryImpl
-import ru.netology.nmedia.util.Base_Url.BASE_URL
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -51,11 +49,11 @@ class PostViewHolder(
             content.text = post.content
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
-            avatar.loadImageAvatar(url = "${BASE_URL}/avatars/${post.authorAvatar}")
+            avatar.loadImageAvatar(url = "${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
 
             if (post.attachment != null) {
                 imageAttachment.visibility = View.VISIBLE
-                imageAttachment.loadImageAttachment(url = "${BASE_URL}/images/${post.attachment?.url}")
+                imageAttachment.loadImageAttachment(url = "${BuildConfig.BASE_URL}/images/${post.attachment?.url}")
             } else {
                 imageAttachment.visibility = View.GONE
             }

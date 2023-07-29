@@ -2,16 +2,17 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'org.jetbrains.kotlin.android'
 
 android {
     namespace "ru.netology.nmedia"
 
-    compileSdkVersion 33
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "ru.netology.nmedia"
         minSdkVersion 22
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
 
@@ -29,6 +30,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     buildTypes {
@@ -36,32 +38,36 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             manifestPlaceholders.usesCleartextTraffic = false
+            buildConfigField "String", "BASE_URL", "\"https://netomedia.ru\""
         }
         debug {
+            buildConfigField "String", "BASE_URL", "\"http://10.0.2.2:9999\""
             manifestPlaceholders.usesCleartextTraffic = true
         }
     }
 }
 
 dependencies {
-    def core_version = "1.9.0"
-    def appcompat_version = "1.5.1"
+    implementation 'androidx.core:core-ktx:+'
+    def core_version = "1.10.1"
+    def appcompat_version = "1.6.1"
     def constraintlayout_version = "2.1.4"
-    def recyclerview_version = "1.2.1"
+    def recyclerview_version = "1.3.0"
     def junit_version = "4.13.2"
     def ext_junit_version = "1.1.3"
     def espresso_core_version = "3.4.0"
-    def activity_version = "1.6.0"
-    def lifecycle_version = "2.5.1"
-    def mdc_version = "1.6.1"
-    def gson_version = "2.10.1"
-    def nav_version = "2.5.2"
-    def room_version = "2.4.3"
+    def activity_version = "1.7.2"
+    def lifecycle_version = "2.6.1"
+    def mdc_version = "1.9.0"
+    def nav_version = "2.6.0"
+    def room_version = "2.5.2"
     def firebase_version = "30.5.0"
-    def okhttp_version = "4.11.0"
-    def play_services_base_version = "18.1.0"
+    def play_services_base_version = "18.2.0"
     def swiperefreshlayout = "1.1.0"
     def glide_version = "4.15.1"
+    def retrofit_version = "2.9.0"
+    def retrofitgson_version = "2.9.0"
+    def okhttplogging_version = "4.11.0"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "androidx.core:core-ktx:$core_version"
@@ -74,14 +80,15 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
     kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
     implementation "com.google.android.material:material:$mdc_version"
-    implementation "com.google.code.gson:gson:$gson_version"
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation platform("com.google.firebase:firebase-bom:$firebase_version")
     implementation "com.google.firebase:firebase-messaging-ktx"
-    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitgson_version"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttplogging_version"
     implementation "com.google.android.gms:play-services-base:$play_services_base_version"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:$swiperefreshlayout"
     implementation "com.github.bumptech.glide:glide:$glide_version"
