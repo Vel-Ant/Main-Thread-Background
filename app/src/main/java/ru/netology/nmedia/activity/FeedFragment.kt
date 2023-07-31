@@ -84,6 +84,7 @@ class FeedFragment : Fragment() {
                 binding.error300.visibility = View.GONE
                 binding.error400.visibility = View.GONE
                 binding.error500.visibility = View.GONE
+                binding.anotherError.visibility = View.GONE
             }
         }
 

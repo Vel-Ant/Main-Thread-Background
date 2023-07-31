@@ -10,10 +10,9 @@
         android:id="@+id/edit"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="start|top"
-        android:inputType="textMultiLine"
         android:background="@android:color/transparent"
-        />
+        android:gravity="start|top"
+        android:inputType="textMultiLine" />
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
@@ -31,5 +30,82 @@
         app:srcCompat="@drawable/ic_ok_24dp"
         app:layout_anchor="@id/bottomAppBar"
         />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/retryButtonNewPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/retry_loading"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+        android:id="@+id/anotherErrorNewPost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/common_spacing"
+        android:text="@string/anotherError"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:background="#87ceeb"
+        app:layout_constraintBottom_toTopOf="@+id/retryButtonNewPost"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/error300NewPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/common_spacing"
+            android:text="@string/error300_loading"
+            android:visibility="gone"
+            android:textSize="18sp"
+            android:background="#87ceeb"
+            app:layout_constraintBottom_toTopOf="@+id/retryButtonNewPost"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/error400NewPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/common_spacing"
+            android:text="@string/error400_loading"
+            android:visibility="gone"
+            android:textSize="18sp"
+            android:background="#87ceeb"
+            app:layout_constraintBottom_toTopOf="@+id/retryButtonNewPost"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/error500NewPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/common_spacing"
+            android:text="@string/error500_loading"
+            android:visibility="gone"
+            android:textSize="18sp"
+            android:background="#87ceeb"
+            app:layout_constraintBottom_toTopOf="@+id/retryButtonNewPost"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

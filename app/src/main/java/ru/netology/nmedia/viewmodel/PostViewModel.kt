@@ -44,8 +44,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
+                _data.value = FeedModel(error = false)
                 if (exception is NumberResponseError) {
-                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                    _data.postValue(
+                        FeedModel(
+                            codeResponse = exception.code,
+                            posts = _data.value?.posts.orEmpty(),
+                            error = true
+                        )
+                    )
                 } else {
                     _data.value = FeedModel(error = true)
                 }
@@ -61,8 +68,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 override fun onError(exception: Exception) {
+                    _data.value = FeedModel(error = false)
                     if (exception is NumberResponseError) {
-                        _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                        _data.postValue(
+                            FeedModel(
+                                codeResponse = exception.code,
+                                posts = _data.value?.posts.orEmpty(),
+                                error = true
+                            )
+                        )
                     } else {
                         _data.value = FeedModel(error = true)
                     }
@@ -99,8 +113,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
+                _data.value = FeedModel(error = false)
                 if (exception is NumberResponseError) {
-                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                    _data.postValue(
+                        FeedModel(
+                            codeResponse = exception.code,
+                            posts = _data.value?.posts.orEmpty(),
+                            error = true
+                        )
+                    )
                 } else {
                     _data.value = FeedModel(error = true)
                 }
@@ -121,8 +142,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
+                _data.value = FeedModel(error = false)
                 if (exception is NumberResponseError) {
-                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                    _data.postValue(
+                        FeedModel(
+                            codeResponse = exception.code,
+                            posts = _data.value?.posts.orEmpty(),
+                            error = true
+                        )
+                    )
                 } else {
                     _data.value = FeedModel(error = true)
                 }
@@ -141,8 +169,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(exception: Exception) {
+                _data.value = FeedModel(error = false)
                 if (exception is NumberResponseError) {
-                    _data.postValue(FeedModel(codeResponse = exception.code, posts = _data.value?.posts.orEmpty(), error = true))
+                    _data.postValue(
+                        FeedModel(
+                            codeResponse = exception.code,
+                            posts = _data.value?.posts.orEmpty(),
+                            error = true
+                        )
+                    )
                 } else {
                     _data.value = FeedModel(error = true)
                 }

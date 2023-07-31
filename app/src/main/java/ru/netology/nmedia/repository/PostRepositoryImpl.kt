@@ -6,7 +6,6 @@ import retrofit2.Response
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.errors.NumberResponseError
-import ru.netology.nmedia.model.FeedModel
 
 class PostRepositoryImpl : PostRepository {
 
@@ -28,7 +27,6 @@ class PostRepositoryImpl : PostRepository {
                 override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                     if (!response.isSuccessful) {
                         callback.onError(NumberResponseError(response.code()))
-//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
 
@@ -56,7 +54,6 @@ class PostRepositoryImpl : PostRepository {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (!response.isSuccessful) {
                         callback.onError(NumberResponseError(response.code()))
-//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
                     val post = response.body()
@@ -82,7 +79,6 @@ class PostRepositoryImpl : PostRepository {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (!response.isSuccessful) {
                         callback.onError(NumberResponseError(response.code()))
-//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
                     val post = response.body()
@@ -108,7 +104,6 @@ class PostRepositoryImpl : PostRepository {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (!response.isSuccessful) {
                         callback.onError(NumberResponseError(response.code()))
-//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
 
@@ -135,7 +130,6 @@ class PostRepositoryImpl : PostRepository {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                     if (!response.isSuccessful) {
                         callback.onError(NumberResponseError(response.code()))
-//                        callback.onError(RuntimeException(response.errorBody()?.string()))
                         return
                     }
 

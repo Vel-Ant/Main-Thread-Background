@@ -34,6 +34,29 @@ class NewPostFragment : Fragment() {
         arguments?.textArg
             ?.let(binding.edit::setText)
 
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            if (state.error) {
+                binding.retryButtonNewPost.visibility = View.VISIBLE
+                when (state.codeResponse) {
+                    in 300..399 -> binding.error300NewPost.visibility = View.VISIBLE
+                    in 400..499 -> binding.error400NewPost.visibility = View.VISIBLE
+                    in 500..599 -> binding.error500NewPost.visibility = View.VISIBLE
+                    else -> binding.anotherErrorNewPost.visibility = View.VISIBLE
+                }
+            } else {
+                binding.retryButtonNewPost.visibility = View.GONE
+                binding.error300NewPost.visibility = View.GONE
+                binding.error400NewPost.visibility = View.GONE
+                binding.error500NewPost.visibility = View.GONE
+                binding.anotherErrorNewPost.visibility = View.GONE
+            }
+        }
+
+        binding.retryButtonNewPost.setOnClickListener {
+            viewModel.loadPosts()
+            findNavController().navigateUp()
+        }
+
         binding.ok.setOnClickListener {
             viewModel.changeContent(binding.edit.text.toString())
             viewModel.save()
