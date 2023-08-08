@@ -34,7 +34,7 @@ class NewPostFragment : Fragment() {
         arguments?.textArg
             ?.let(binding.edit::setText)
 
-        viewModel.data.observe(viewLifecycleOwner) { state ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
             if (state.error) {
                 binding.retryButtonNewPost.visibility = View.VISIBLE
                 when (state.codeResponse) {
