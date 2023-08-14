@@ -87,7 +87,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             edited.value?.let {
                 try {
                     repository.save(it)
-                    _postCreated.postValue(Unit)
                     _state.value = FeedModelState()
                 } catch (e: Exception) {
                     _state.value = FeedModelState(error = false)
@@ -122,10 +121,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 repository.likeById(id)
-                data.value?.posts.orEmpty()
-                    .map {
-                        if (it.id == id) repository.likeById(id) else it
-                    }
                 _state.value = FeedModelState(
                     error = false, codeResponse = null
                 )
@@ -146,10 +141,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 repository.unlikeById(id)
-                data.value?.posts.orEmpty()
-                    .map {
-                        if (it.id == id) repository.unlikeById(id) else it
-                    }
                 _state.value = FeedModelState(
                     error = false, codeResponse = null
                 )
@@ -167,14 +158,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun removeById(id: Long) {
+        val old = data.value?.posts.orEmpty()
         viewModelScope.launch {
             try {
                 repository.removeById(id)
-                data.value?.posts.orEmpty().filter { it.id != id }
                 _state.value = FeedModelState(
                     error = false, codeResponse = null
                 )
             } catch (e: Exception) {
+                data.value?.copy(posts = old)
                 _state.value = FeedModelState(error = false)
                 if (e is NumberResponseError) {
                     _state.value = FeedModelState(

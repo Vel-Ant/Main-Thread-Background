@@ -2,11 +2,13 @@ package ru.netology.nmedia.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
+import androidx.room.util.copy
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.errors.NumberResponseError
+import ru.netology.nmedia.viewmodel.PostViewModel
 
 class PostRepositoryImpl(
     private val dao: PostDao,
@@ -44,6 +46,7 @@ class PostRepositoryImpl(
         val response = PostApi.service.likeById(id)
 
         if (!response.isSuccessful) {
+            dao.likeById(id)
             throw NumberResponseError(response.code())
         }
         val body = response.body() ?: throw RuntimeException("body is null")
@@ -56,6 +59,7 @@ class PostRepositoryImpl(
         val response = PostApi.service.unlikeById(id)
 
         if (!response.isSuccessful) {
+            dao.likeById(id)
             throw NumberResponseError(response.code())
         }
         val body = response.body() ?: throw RuntimeException("body is null")

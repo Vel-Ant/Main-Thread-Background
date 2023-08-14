@@ -10,9 +10,8 @@ import ru.netology.nmedia.entity.PostEntity
 
 @Database(
     entities = [PostEntity::class],
-    exportSchema = true,
-    version = 2,
-    autoMigrations = [AutoMigration (from = 1, to = 2)])
+    version = 1,
+    exportSchema = false)
 abstract class AppDb : RoomDatabase() {
     abstract fun postDao(): PostDao
 
