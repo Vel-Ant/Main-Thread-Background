@@ -2,6 +2,7 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -86,9 +88,25 @@ class FeedFragment : Fragment() {
             }
         }
 
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            if (it >= 1 ) {
+                binding.newerPostsButton.visibility = View.VISIBLE
+            }
+        }
+
+        binding.newerPostsButton.setOnClickListener {
+            binding.newerPostsButton.visibility = View.GONE
+            viewModel.loadAllPosts()
+            binding.list.smoothScrollToPosition(0)
+        }
+
         viewModel.data.observe(viewLifecycleOwner) {
             binding.emptyText.isVisible = it.empty
             adapter.submitList(it.posts)
+        }
+
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            Log.d("FeedFragment", "newer count: $id")
         }
 
         binding.retryButton.setOnClickListener {

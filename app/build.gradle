@@ -60,8 +60,8 @@ dependencies {
     def activity_version = "1.7.2"
     def lifecycle_version = "2.6.1"
     def mdc_version = "1.9.0"
-    def nav_version = "2.6.0"
-    def room_version = "2.6.0-alpha02"
+    def nav_version = "2.7.0"
+    def room_version = "2.6.0-alpha03"
     def firebase_version = '32.2.2'
     def play_services_base_version = "18.2.0"
     def glide_version = "4.15.1"

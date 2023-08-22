@@ -2,7 +2,9 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Attachment
@@ -35,11 +37,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         get() = _state
     val data: LiveData<FeedModel> = repository.data.map {
         FeedModel(posts = it, empty = it.isEmpty())
-    }
+    }.asLiveData(Dispatchers.Default)
     private val edited = MutableLiveData(empty)
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+    val newerCount: LiveData<Int> = data.switchMap {
+        val id = it.posts.firstOrNull()?.id ?: 0L
+        repository.getNewerCount(id).asLiveData(Dispatchers.Default)
+    }
 
     init {
         loadPosts()
@@ -64,6 +70,25 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     fun loadPosts() {
+        _state.value = FeedModelState(loading = true)
+        viewModelScope.launch {
+            try {
+                repository.getAllVisiblePosts()
+                _state.value = FeedModelState()
+            } catch (e: Exception) {
+                _state.value = FeedModelState(error = false)
+                if (e is NumberResponseError) {
+                    _state.value = FeedModelState(
+                        codeResponse = e.code, error = true
+                    )
+                } else {
+                    _state.value = FeedModelState(error = true)
+                }
+            }
+        }
+    }
+
+    fun loadAllPosts() {
         _state.value = FeedModelState(loading = true)
         viewModelScope.launch {
             try {

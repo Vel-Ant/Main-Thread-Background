@@ -24,4 +24,6 @@
     <string name="channel_remote_name">Server notifications</string>
     <string name="channel_remote_description">Notifications from remote server</string>
     <string name="menu_refresh">Refresh</string>
+    <string name="new_posts">New posts</string>
+    <string name="go_to_new_posts">go_to_new_posts</string>
 </resources>
