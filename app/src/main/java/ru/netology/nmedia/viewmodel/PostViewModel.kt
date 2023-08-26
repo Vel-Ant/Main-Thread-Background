@@ -73,7 +73,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         _state.value = FeedModelState(loading = true)
         viewModelScope.launch {
             try {
-                repository.getAllVisiblePosts()
+                repository.getAll()
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = false)
@@ -88,11 +88,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loadAllPosts() {
+    fun loadAllNewPosts() {
         _state.value = FeedModelState(loading = true)
         viewModelScope.launch {
             try {
-                repository.getAll()
+                repository.getAllNewPosts()
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = false)

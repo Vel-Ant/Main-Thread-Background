@@ -1,5 +1,7 @@
 package ru.netology.nmedia.repository
 
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -20,6 +22,7 @@ class PostRepositoryImpl(
         it.map(PostEntity::toDto)
     }
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             try {
@@ -49,11 +52,12 @@ class PostRepositoryImpl(
 
         val posts = response.body() ?: throw RuntimeException("body is null")
 
-        dao.insert(posts.map(PostEntity::fromDto))
+        dao.insert(posts.toEntity(false))
     }
 
-    override suspend fun getAllVisiblePosts() {
-        dao.getAllVisible()
+    override suspend fun getAllNewPosts() {
+        dao.getAllNewPosts()
+        dao.makeAllNewPostsVisible()
     }
 
     override suspend fun save(post: Post) {

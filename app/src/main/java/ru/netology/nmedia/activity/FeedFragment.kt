@@ -91,22 +91,19 @@ class FeedFragment : Fragment() {
         viewModel.newerCount.observe(viewLifecycleOwner) {
             if (it >= 1 ) {
                 binding.newerPostsButton.visibility = View.VISIBLE
+                Log.d("FeedFragment", "newer count: $id")
             }
         }
 
         binding.newerPostsButton.setOnClickListener {
             binding.newerPostsButton.visibility = View.GONE
-            viewModel.loadAllPosts()
+            viewModel.loadAllNewPosts()
             binding.list.smoothScrollToPosition(0)
         }
 
         viewModel.data.observe(viewLifecycleOwner) {
             binding.emptyText.isVisible = it.empty
             adapter.submitList(it.posts)
-        }
-
-        viewModel.newerCount.observe(viewLifecycleOwner) {
-            Log.d("FeedFragment", "newer count: $id")
         }
 
         binding.retryButton.setOnClickListener {
