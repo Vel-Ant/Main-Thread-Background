@@ -92,14 +92,23 @@ class FeedFragment : Fragment() {
             if (it >= 1 ) {
                 binding.newerPostsButton.visibility = View.VISIBLE
                 Log.d("FeedFragment", "newer count: $id")
+            } else {
+                binding.newerPostsButton.visibility = View.GONE
             }
         }
 
         binding.newerPostsButton.setOnClickListener {
             binding.newerPostsButton.visibility = View.GONE
             viewModel.loadAllNewPosts()
-            binding.list.smoothScrollToPosition(0)
         }
+
+        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                if (positionStart == 0) {
+                    binding.list.smoothScrollToPosition(0)
+                }
+            }
+        })
 
         viewModel.data.observe(viewLifecycleOwner) {
             binding.emptyText.isVisible = it.empty

@@ -18,7 +18,7 @@ class PostRepositoryImpl(
     private val dao: PostDao,
 ) : PostRepository {
 
-    override val data: Flow<List<Post>> = dao.getAll().map {
+    override val data: Flow<List<Post>> = dao.getAllVisible().map {
         it.map(PostEntity::toDto)
     }
 
@@ -56,7 +56,6 @@ class PostRepositoryImpl(
     }
 
     override suspend fun getAllNewPosts() {
-        dao.getAllNewPosts()
         dao.makeAllNewPostsVisible()
     }
 
