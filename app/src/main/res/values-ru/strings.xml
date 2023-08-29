@@ -27,4 +27,6 @@
     <string name="menu_refresh">Refresh</string>
     <string name="new_posts">Новые посты</string>
     <string name="go_to_new_posts">перейти к новым постам</string>
+    <string name="clear">очистить</string>
+    <string name="image_full_screen" />
 </resources>

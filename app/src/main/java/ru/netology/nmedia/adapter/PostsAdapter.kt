@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -13,6 +15,7 @@ import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.imageview.loadImageAttachment
 import ru.netology.nmedia.imageview.loadImageAvatar
+import java.net.URL
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -20,6 +23,7 @@ interface OnInteractionListener {
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
     fun onLoadPost() {}
+    fun onImageView(url: String) {}
 }
 
 class PostsAdapter(
@@ -53,7 +57,14 @@ class PostViewHolder(
 
             if (post.attachment != null) {
                 imageAttachment.visibility = View.VISIBLE
-                imageAttachment.loadImageAttachment(url = "${BuildConfig.BASE_URL}/images/${post.attachment?.url}")
+                imageAttachment.loadImageAttachment(url = "${BuildConfig.BASE_URL}/media/${post.attachment?.url}")
+
+                imageAttachment.setOnClickListener {
+                    post.attachment?.let {
+                        onInteractionListener.onImageView(it.url)
+                    }
+                }
+
             } else {
                 imageAttachment.visibility = View.GONE
             }

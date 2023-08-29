@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -12,9 +13,11 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.errors.NumberResponseError
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.util.AttachmentType
 import ru.netology.nmedia.util.SingleLiveEvent
+import java.io.File
 
 private val empty = Post(
     id = 0,
@@ -24,7 +27,7 @@ private val empty = Post(
     likedByMe = false,
     likes = 0,
     published = "",
-    attachment = Attachment("", " ", AttachmentType.IMAGE)
+    attachment = Attachment("", AttachmentType.IMAGE)
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -35,17 +38,26 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableLiveData(FeedModelState())
     val state: LiveData<FeedModelState>
         get() = _state
+
     val data: LiveData<FeedModel> = repository.data.map {
         FeedModel(posts = it, empty = it.isEmpty())
     }.asLiveData(Dispatchers.Default)
+
     private val edited = MutableLiveData(empty)
+
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+
     val newerCount: LiveData<Int> = data.switchMap {
         val id = it.posts.firstOrNull()?.id ?: 0L
         repository.getNewerCount(id).asLiveData(Dispatchers.Default)
+
     }
+
+    private val _photo = MutableLiveData<PhotoModel?>(null)
+    val photo: LiveData<PhotoModel?>
+        get() = _photo
 
     init {
         loadPosts()
@@ -69,6 +81,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
     fun loadPosts() {
         _state.value = FeedModelState(loading = true)
         viewModelScope.launch {
@@ -111,7 +124,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             edited.value?.let {
                 try {
-                    repository.save(it)
+                    _photo.value?.let { photoModel ->
+                        repository.saveWithAttachment(it, photoModel.file)
+                    } ?: run { repository.save(it) }
                     _state.value = FeedModelState()
                 } catch (e: Exception) {
                     _state.value = FeedModelState(error = false)
@@ -138,7 +153,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
         edited.value = edited.value?.copy(
-            content = text
+            content = text,
+//            published = java.text.SimpleDateFormat("dd.MM.yyyy' в 'HH:mm:ss' '")
+//                .format(System.currentTimeMillis())
         )
     }
 
@@ -202,6 +219,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    fun setPhoto(photoModel: PhotoModel) {
+        _photo.value = photoModel
+    }
+
+    fun clearPhoto() {
+        _photo.value = null
     }
 
     override fun onCleared() {

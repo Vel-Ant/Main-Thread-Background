@@ -65,6 +65,12 @@ class FeedFragment : Fragment() {
             override fun onLoadPost() {
                 viewModel.loadPosts()
             }
+
+            override fun onImageView(url: String) {
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_imageViewFragment,
+                    Bundle().apply { putString("url", url) })
+            }
         })
         binding.list.adapter = adapter
         viewModel.state.observe(viewLifecycleOwner) { state ->
@@ -89,7 +95,7 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
-            if (it >= 1 ) {
+            if (it >= 1) {
                 binding.newerPostsButton.visibility = View.VISIBLE
                 Log.d("FeedFragment", "newer count: $id")
             } else {

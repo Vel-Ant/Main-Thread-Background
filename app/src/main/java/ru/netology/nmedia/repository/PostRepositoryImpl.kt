@@ -6,12 +6,20 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.Media
+import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.errors.NumberResponseError
+import ru.netology.nmedia.util.AttachmentType
+import java.io.File
+import java.io.IOException
 import java.util.concurrent.CancellationException
 
 class PostRepositoryImpl(
@@ -68,6 +76,39 @@ class PostRepositoryImpl(
         val body = response.body() ?: throw RuntimeException("body is null")
 
         dao.insert(PostEntity.fromDto(body))
+    }
+
+    override suspend fun saveWithAttachment(post: Post, file: File) {
+        val media = uploadMedia(file)
+
+        val response = PostApi.service.save(
+            post.copy(
+                attachment = Attachment(
+                    url = media.id,
+                    AttachmentType.IMAGE
+                )
+            )
+        )
+
+        if (!response.isSuccessful) {
+            throw NumberResponseError(response.code())
+        }
+        val body = response.body() ?: throw RuntimeException("body is null")
+
+        dao.insert(PostEntity.fromDto(body))
+    }
+
+    private suspend fun uploadMedia(file: File): Media {
+        val formData = MultipartBody.Part.createFormData(
+            "file", file.name, file.asRequestBody()
+        )
+
+        val response = PostApi.service.uploadMedia(formData)
+        if (!response.isSuccessful) {
+            throw NumberResponseError(response.code())
+        }
+
+        return response.body() ?: throw RuntimeException("body is null")
     }
 
     override suspend fun likeById(id: Long) {
