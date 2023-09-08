@@ -1,7 +1,6 @@
 package ru.netology.nmedia.activity
 
 import android.app.Activity
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -66,6 +65,7 @@ class NewPostFragment : Fragment() {
         }
 
         binding.retryButtonNewPost.setOnClickListener {
+            AndroidUtils.hideKeyboard(requireView())
             viewModel.loadPosts()
             findNavController().navigateUp()
         }
@@ -81,7 +81,7 @@ class NewPostFragment : Fragment() {
                         viewModel.changeContent(binding.edit.text.toString())
                         viewModel.save()
                         AndroidUtils.hideKeyboard(requireView())
-                        findNavController().navigateUp()
+//                        findNavController().navigateUp()
                         true
                     }
 

@@ -1,5 +1,6 @@
 package ru.netology.nmedia.api
 
+import okhttp3.Interceptor
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -9,14 +10,18 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
 import ru.netology.nmedia.BuildConfig
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.User
 import java.util.concurrent.TimeUnit
 
 private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
@@ -37,6 +42,18 @@ private val retrofit = Retrofit.Builder()
     .client(client)
     .addConverterFactory(GsonConverterFactory.create())
     .build()
+
+    // TODO: check
+//private val authInterceptor = Interceptor { chain ->
+//    val request = AppAuth.getInstance().authState.value?.token?.let {
+//        chain.request()
+//            .newBuilder()
+//            .addHeader("Authorization", it)
+//            .build()
+//    } ?: chain.request()
+//
+//    chain.proceed(request)
+//}
 
 interface PostApiService {
     @GET("posts")
@@ -63,6 +80,14 @@ interface PostApiService {
     @Multipart
     @POST("media")
     suspend fun uploadMedia(@Part media: MultipartBody.Part): Response<Media>
+
+    @FormUrlEncoded
+    @POST("users/authentication")
+    suspend fun updateUser(@Field("login") login: String, @Field("pass") pass: String): Response<User>
+
+    @FormUrlEncoded
+    @POST("users/registration")
+    suspend fun registerUser(@Field("login") login: String, @Field("pass") pass: String, @Field("name") name: String): Response<User>
 
 }
 

@@ -4,8 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
-import androidx.navigation.fragment.findNavController
+import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +15,7 @@ import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.imageview.loadImageAttachment
 import ru.netology.nmedia.imageview.loadImageAvatar
-import java.net.URL
+import ru.netology.nmedia.viewmodel.AuthViewModel
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -40,11 +40,12 @@ class PostsAdapter(
     }
 }
 
-
 class PostViewHolder(
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
 ) : RecyclerView.ViewHolder(binding.root) {
+
+    private val authViewModel: AuthViewModel = AuthViewModel()
 
     fun bind(post: Post) {
         binding.apply {
@@ -69,6 +70,8 @@ class PostViewHolder(
                 imageAttachment.visibility = View.GONE
             }
 
+            menu.isVisible = post.ownedByMe
+
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.options_post)
@@ -91,7 +94,13 @@ class PostViewHolder(
             }
 
             like.setOnClickListener {
-                onInteractionListener.onLike(post)
+                if (authViewModel.authenticated) {
+                    onInteractionListener.onLike(post)
+                } else {
+                    like.isChecked = false
+                    Toast.makeText(it.context,"Only registered users can like", Toast.LENGTH_LONG)
+                        .show()
+                }
             }
 
             share.setOnClickListener {

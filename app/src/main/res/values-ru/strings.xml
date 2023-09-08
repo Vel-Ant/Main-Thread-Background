@@ -29,4 +29,17 @@
     <string name="go_to_new_posts">перейти к новым постам</string>
     <string name="clear">очистить</string>
     <string name="image_full_screen" />
+    <string name="logout">Logout</string>
+    <string name="login">Login</string>
+    <string name="registration">Registration</string>
+    <string name="signInAnUp_full_screen" />
+    <string name="sign_in">SIGN IN</string>
+    <string name="password">Password</string>
+    <string name="authentication">Authentication</string>
+    <string name="sign_up">SIGN UP</string>
+    <string name="name">Name</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="login_error">Invalid login or password. Try again</string>
+    <string name="pass_error">Passwords are not identical</string>
+    <string name="already_registered">I am already registered</string>
 </resources>

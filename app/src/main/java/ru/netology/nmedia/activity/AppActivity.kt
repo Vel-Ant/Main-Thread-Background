@@ -1,20 +1,33 @@
 package ru.netology.nmedia.activity
 
 import android.Manifest
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.util.AndroidUtils
+import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
+
+    private val authViewModel by viewModels<AuthViewModel>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +55,71 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         }
 
         checkGoogleApiAvailability()
+
+        var currentMenuProvider: MenuProvider? = null
+
+        authViewModel.data.observe(this) {
+            currentMenuProvider?.let(::removeMenuProvider)
+
+            addMenuProvider(object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.menu_auth, menu)
+
+                    menu.setGroupVisible(R.id.unauthorized, !authViewModel.authenticated)
+                    menu.setGroupVisible(R.id.authorized, authViewModel.authenticated)
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                    when (menuItem.itemId) {
+                        R.id.signIn -> {
+                            findNavController(R.id.nav_host_fragment)
+                                .navigate(
+                                    R.id.action_feedFragment_to_singInAndUpFragment,
+                                    Bundle().apply { textArg = "signIn" }
+                                )
+                                currentMenuProvider?.let(::removeMenuProvider)
+                            true
+                        }
+
+                        R.id.signUp -> {
+                            findNavController(R.id.nav_host_fragment)
+                                .navigate(
+                                    R.id.action_feedFragment_to_singInAndUpFragment,
+                                    Bundle().apply { textArg = "signUp" }
+                                )
+                            currentMenuProvider?.let(::removeMenuProvider)
+                            true
+                        }
+
+                        R.id.logout -> {
+                            createDialogLogoutButton()
+                            true
+                        }
+
+                        else -> false
+                    }
+
+            }.also {
+                currentMenuProvider = it
+            }, this)
+        }
+    }
+
+    fun createDialogLogoutButton(): Dialog {
+        return this.let {
+            val builder = AlertDialog.Builder(it)
+            builder.setTitle("Are you sure you want to get out?")
+                .setCancelable(true)
+                .setPositiveButton("OK") { dialog, _ ->
+                    AppAuth.getInstance().removeAuth()
+                    findNavController(R.id.nav_host_fragment).navigateUp()
+                    dialog.cancel()
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.cancel()
+                }
+            builder.show()
+        } ?: throw IllegalStateException("Activity cannot be null")
     }
 
     private fun requestNotificationsPermission() {

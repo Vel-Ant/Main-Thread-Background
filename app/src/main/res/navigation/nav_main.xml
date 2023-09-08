@@ -22,7 +22,15 @@
             app:destination="@id/imageViewFragment"
             app:enterAnim="@android:anim/fade_in"
             app:exitAnim="@android:anim/fade_out"
-            app:popEnterAnim="@android:anim/fade_in" />
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out" />
+        <action
+            android:id="@+id/action_feedFragment_to_singInAndUpFragment"
+            app:destination="@id/singInAndUpFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:popEnterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out" />
     </fragment>
     <fragment
         android:id="@+id/newPostFragment"
@@ -34,4 +42,9 @@
         android:name="ru.netology.nmedia.activity.ImageViewFragment"
         android:label="image_view_fragment"
         tools:layout="@layout/fragment_image_view" />
+    <fragment
+        android:id="@+id/singInAndUpFragment"
+        android:name="ru.netology.nmedia.activity.SingInAndUpFragment"
+        android:label="fragment_sing_in_and_up"
+        tools:layout="@layout/fragment_sing_in_and_up" />
 </navigation>

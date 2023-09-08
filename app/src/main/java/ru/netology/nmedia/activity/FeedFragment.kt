@@ -6,9 +6,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.R
@@ -17,11 +18,14 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.util.AndroidUtils
+import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class FeedFragment : Fragment() {
 
-    private val viewModel: PostViewModel by activityViewModels()
+    private val postViewModel by viewModels<PostViewModel>()
+    private val authViewModel by viewModels<AuthViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,7 +36,7 @@ class FeedFragment : Fragment() {
 
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
-                viewModel.edit(post)
+                postViewModel.edit(post)
                 findNavController().navigate(
                     R.id.action_feedFragment_to_newPostFragment,
                     Bundle().apply { textArg = post.content })
@@ -40,14 +44,14 @@ class FeedFragment : Fragment() {
 
             override fun onLike(post: Post) {
                 if (post.likedByMe) {
-                    viewModel.unlikeById(post.id)
+                    postViewModel.unlikeById(post.id)
                 } else {
-                    viewModel.likeById(post.id)
+                    postViewModel.likeById(post.id)
                 }
             }
 
             override fun onRemove(post: Post) {
-                viewModel.removeById(post.id)
+                postViewModel.removeById(post.id)
             }
 
             override fun onShare(post: Post) {
@@ -63,7 +67,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLoadPost() {
-                viewModel.loadPosts()
+                postViewModel.loadPosts()
             }
 
             override fun onImageView(url: String) {
@@ -73,7 +77,8 @@ class FeedFragment : Fragment() {
             }
         })
         binding.list.adapter = adapter
-        viewModel.state.observe(viewLifecycleOwner) { state ->
+//        AndroidUtils.hideKeyboard(requireView())
+        postViewModel.state.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
 
@@ -94,7 +99,7 @@ class FeedFragment : Fragment() {
             }
         }
 
-        viewModel.newerCount.observe(viewLifecycleOwner) {
+        postViewModel.newerCount.observe(viewLifecycleOwner) {
             if (it >= 1) {
                 binding.newerPostsButton.visibility = View.VISIBLE
                 Log.d("FeedFragment", "newer count: $id")
@@ -104,8 +109,8 @@ class FeedFragment : Fragment() {
         }
 
         binding.newerPostsButton.setOnClickListener {
-            binding.newerPostsButton.visibility = View.GONE
-            viewModel.loadAllNewPosts()
+            binding.newerPostsButton
+            postViewModel.loadAllNewPosts()
         }
 
         adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
@@ -116,17 +121,22 @@ class FeedFragment : Fragment() {
             }
         })
 
-        viewModel.data.observe(viewLifecycleOwner) {
+        postViewModel.data.observe(viewLifecycleOwner) {
             binding.emptyText.isVisible = it.empty
             adapter.submitList(it.posts)
         }
 
         binding.retryButton.setOnClickListener {
-            viewModel.loadPosts()
+            postViewModel.loadPosts()
         }
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (authViewModel.authenticated) {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            } else {
+                Toast.makeText(requireContext(), "Only registered users can create a post", Toast.LENGTH_LONG)
+                    .show()
+            }
         }
 
         binding.swiperefresh.setColorSchemeResources(
@@ -134,7 +144,7 @@ class FeedFragment : Fragment() {
         )
 
         binding.swiperefresh.setOnRefreshListener {
-            viewModel.refresh()
+            postViewModel.refresh()
         }
 
         return binding.root

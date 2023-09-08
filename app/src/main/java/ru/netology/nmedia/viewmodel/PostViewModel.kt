@@ -1,12 +1,13 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
-import android.net.Uri
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Post
@@ -17,17 +18,18 @@ import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.util.AttachmentType
 import ru.netology.nmedia.util.SingleLiveEvent
-import java.io.File
 
 private val empty = Post(
     id = 0,
-    content = "",
+    authorId = 0,
     author = "",
     authorAvatar = "",
+    content = "",
+    published = "",
     likedByMe = false,
     likes = 0,
-    published = "",
-    attachment = Attachment("", AttachmentType.IMAGE)
+    attachment = Attachment("", AttachmentType.IMAGE),
+    ownedByMe = false
 )
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
@@ -39,8 +41,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: LiveData<FeedModel> = repository.data.map {
-        FeedModel(posts = it, empty = it.isEmpty())
+    val data: LiveData<FeedModel> = AppAuth.getInstance().authState.flatMapLatest { token ->
+        repository.data.map { posts ->
+            FeedModel(posts.map {
+                it.copy(ownedByMe = it.authorId == token?.id)
+            }, posts.isEmpty())
+        }
     }.asLiveData(Dispatchers.Default)
 
     private val edited = MutableLiveData(empty)
