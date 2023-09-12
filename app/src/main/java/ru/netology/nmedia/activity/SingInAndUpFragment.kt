@@ -1,23 +1,47 @@
 package ru.netology.nmedia.activity
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toFile
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.github.dhaval2404.imagepicker.ImagePicker
+import com.github.dhaval2404.imagepicker.constant.ImageProvider
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentSingInAndUpBinding
+import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.viewmodel.SignInAndUpViewModel
 
 class SingInAndUpFragment : Fragment() {
 
     private val signInAndUpViewModel by viewModels<SignInAndUpViewModel>()
+
+    val pickAvatarLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            when (it.resultCode) {
+                ImagePicker.RESULT_ERROR -> {
+                    Snackbar.make(
+                        requireView(),
+                        ImagePicker.getError(it.data),
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+                Activity.RESULT_OK -> {
+                    val uri = requireNotNull(it.data?.data)
+                    signInAndUpViewModel.changeAvatar(uri = uri, file = uri.toFile())
+                }
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,14 +73,59 @@ class SingInAndUpFragment : Fragment() {
 
             signUpButton.setOnClickListener {
                 if (passwordFieldReg.editText?.text.toString() == confirmPasswordFieldReg.editText?.text.toString()) {
-                    signInAndUpViewModel.regNewUser(
-                        loginFieldReg.editText?.text.toString(),
-                        passwordFieldReg.editText?.text.toString(),
-                        nameFieldReg.editText?.text.toString()
-                    )
-                } else {
-                    confirmPasswordFieldReg.error = getString(R.string.pass_error)
+                    val avatarFile = signInAndUpViewModel.avatar.value?.file
+
+                    if (avatarFile != null) {
+                        signInAndUpViewModel.regNewUserWithPhoto(
+                            login = loginFieldReg.editText?.text.toString(),
+                            pass = passwordFieldReg.editText?.text.toString(),
+                            name = nameFieldReg.editText?.text.toString(),
+                            media = MediaUpload(avatarFile)
+                        )
+                    } else if (avatarFile == null) {
+                        signInAndUpViewModel.regNewUser(
+                            login = loginFieldReg.editText?.text.toString(),
+                            pass = passwordFieldReg.editText?.text.toString(),
+                            name = nameFieldReg.editText?.text.toString()
+                        )
+                    } else {
+                        confirmPasswordFieldReg.error = getString(R.string.pass_error)
+                    }
                 }
+            }
+
+            signInAndUpViewModel.avatar.observe(viewLifecycleOwner) {avatar ->
+                if (avatar == null) {
+                    return@observe
+                }
+                previewAvatar.setImageURI(avatar.uri)
+            }
+
+            gallery.setOnClickListener {
+                ImagePicker.with(requireActivity())
+                    .crop()
+                    .compress(2048)
+                    .provider(ImageProvider.GALLERY)
+                    .galleryOnly()
+                    .galleryMimeTypes(
+                        arrayOf(
+                            "image/png",
+                            "image/jpeg",
+                        )
+                    )
+                    .createIntent(pickAvatarLauncher::launch)
+            }
+
+            takePhoto.setOnClickListener {
+                ImagePicker.with(requireActivity())
+                    .crop()
+                    .compress(2048)
+                    .provider(ImageProvider.CAMERA)
+                    .createIntent(pickAvatarLauncher::launch)
+            }
+
+            clear.setOnClickListener {
+                signInAndUpViewModel.clearAvatar()
             }
 
             regButton.setOnClickListener {
@@ -107,6 +176,4 @@ class SingInAndUpFragment : Fragment() {
         }
         return binding.root
     }
-
-
 }

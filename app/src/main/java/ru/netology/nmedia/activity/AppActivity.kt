@@ -21,7 +21,6 @@ import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
@@ -112,8 +111,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 .setCancelable(true)
                 .setPositiveButton("OK") { dialog, _ ->
                     AppAuth.getInstance().removeAuth()
-                    findNavController(R.id.nav_host_fragment).navigateUp()
                     dialog.cancel()
+                    findNavController(R.id.nav_host_fragment).navigateUp()
                 }
                 .setNegativeButton("Cancel") { dialog, _ ->
                     dialog.cancel()

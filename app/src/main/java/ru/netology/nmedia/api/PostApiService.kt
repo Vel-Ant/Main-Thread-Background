@@ -3,6 +3,7 @@ package ru.netology.nmedia.api
 import okhttp3.Interceptor
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -26,15 +27,29 @@ import java.util.concurrent.TimeUnit
 
 private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
 
+private val authInterceptor = Interceptor { chain ->
+    val request = AppAuth.getInstance().authState.value?.token?.let {
+        chain.request()
+            .newBuilder()
+            .addHeader("Authorization", it)
+            .build()
+    } ?: chain.request()
+
+    chain.proceed(request)
+}
+
+private val loggingInterceptor = HttpLoggingInterceptor().apply {
+    if (BuildConfig.DEBUG) {
+        level = HttpLoggingInterceptor.Level.BODY
+    } else {
+        level = HttpLoggingInterceptor.Level.NONE
+    }
+}
+
 private val client = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
-    .addInterceptor(HttpLoggingInterceptor().apply {
-        if (BuildConfig.DEBUG) {
-            level = HttpLoggingInterceptor.Level.BODY
-        } else {
-            level = HttpLoggingInterceptor.Level.NONE
-        }
-    })
+    .addInterceptor(loggingInterceptor)
+    .addInterceptor(authInterceptor)
     .build()
 
 private val retrofit = Retrofit.Builder()
@@ -42,18 +57,6 @@ private val retrofit = Retrofit.Builder()
     .client(client)
     .addConverterFactory(GsonConverterFactory.create())
     .build()
-
-    // TODO: check
-//private val authInterceptor = Interceptor { chain ->
-//    val request = AppAuth.getInstance().authState.value?.token?.let {
-//        chain.request()
-//            .newBuilder()
-//            .addHeader("Authorization", it)
-//            .build()
-//    } ?: chain.request()
-//
-//    chain.proceed(request)
-//}
 
 interface PostApiService {
     @GET("posts")
@@ -83,12 +86,27 @@ interface PostApiService {
 
     @FormUrlEncoded
     @POST("users/authentication")
-    suspend fun updateUser(@Field("login") login: String, @Field("pass") pass: String): Response<User>
+    suspend fun updateUser(
+        @Field("login") login: String,
+        @Field("pass") pass: String
+    ): Response<User>
 
     @FormUrlEncoded
     @POST("users/registration")
-    suspend fun registerUser(@Field("login") login: String, @Field("pass") pass: String, @Field("name") name: String): Response<User>
+    suspend fun registerUser(
+        @Field("login") login: String,
+        @Field("pass") pass: String,
+        @Field("name") name: String
+    ): Response<User>
 
+    @Multipart
+    @POST("users/registration")
+    suspend fun registerWithPhoto(
+        @Part("login") login: RequestBody,
+        @Part("pass") pass: RequestBody,
+        @Part("name") name: RequestBody,
+        @Part media: MultipartBody.Part,
+    ): Response<User>
 }
 
 object PostApi {

@@ -1,13 +1,20 @@
 package ru.netology.nmedia.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.User
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.UserRepository
+import java.io.File
 
 class SignInAndUpViewModel : ViewModel() {
 
@@ -20,6 +27,11 @@ class SignInAndUpViewModel : ViewModel() {
     private val _user = MutableLiveData<User>()
     val user: LiveData<User>
         get() = _user
+
+    private val _avatar = MutableLiveData<PhotoModel?>(null)
+    val avatar: LiveData<PhotoModel?>
+        get() = _avatar
+
 
     fun login(login: String, pass: String) {
         viewModelScope.launch {
@@ -43,4 +55,33 @@ class SignInAndUpViewModel : ViewModel() {
         }
     }
 
+    fun regNewUserWithPhoto(login: String, pass: String, name: String, media: MediaUpload) {
+        viewModelScope.launch {
+            try {
+                _avatar.value?.file?.let { file ->
+                    val user = repository.registerUserWithPhoto(
+                        login = login,
+                        pass = pass,
+                        name = name,
+                        media = MediaUpload(file)
+                    )
+                    _user.value = user
+                }
+            } catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
+            }
+        }
+    }
+
+    fun setAvatar(photoModel: PhotoModel) {
+        _avatar.value = photoModel
+    }
+
+    fun changeAvatar(uri: Uri, file: File) {
+        _avatar.value = PhotoModel(uri, file)
+    }
+
+    fun clearAvatar() {
+        _avatar.value = null
+    }
 }

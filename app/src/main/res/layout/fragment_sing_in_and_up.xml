@@ -103,10 +103,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="@string/registration"
-                android:textSize="14sp"
-                android:textColor="#800000"
                 android:background="@android:color/transparent"
+                android:text="@string/registration"
+                android:textColor="#800000"
+                android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -121,9 +121,9 @@
     <ScrollView
         android:id="@+id/signUpContainer"
         android:layout_width="wrap_content"
-        android:layout_height="480dp"
+        android:layout_height="match_parent"
         android:fillViewport="true"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -133,17 +133,76 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/previewAvatar"
+                android:layout_width="125dp"
+                android:layout_height="125dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="40dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/faces_24"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:shapeAppearanceOverlay="@style/Circular" />
+
+            <TextView
+                android:id="@+id/textAvatar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="@string/textAvatar"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/previewAvatar" />
+
+            <ImageButton
+                android:id="@+id/takePhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/add_a_photo_24"
+                app:layout_constraintEnd_toStartOf="@+id/gallery"
+                app:layout_constraintTop_toBottomOf="@+id/textAvatar"
+                app:tint="#455A64" />
+
+            <ImageButton
+                android:id="@+id/gallery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:src="@drawable/add_photo_alternate_24"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textAvatar"
+                app:tint="#455A64" />
+
+            <ImageButton
+                android:id="@+id/clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/delete_forever_24"
+                app:layout_constraintStart_toEndOf="@+id/gallery"
+                app:layout_constraintTop_toBottomOf="@+id/textAvatar"
+                app:tint="#455A64" />
+
             <TextView
                 android:id="@+id/registration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="20dp"
                 android:gravity="center"
                 android:text="@string/registration"
                 android:textSize="40sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@+id/clear" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/nameFieldReg"
@@ -261,11 +320,10 @@
                 android:id="@+id/alreadyRegisteredButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/already_registered"
-                android:textSize="14sp"
-                android:textColor="#800000"
                 android:background="@android:color/transparent"
+                android:text="@string/already_registered"
+                android:textColor="#800000"
+                android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
