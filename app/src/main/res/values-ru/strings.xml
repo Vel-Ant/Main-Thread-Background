@@ -43,4 +43,5 @@
     <string name="pass_error">Passwords are not identical</string>
     <string name="already_registered">I am already registered</string>
     <string name="textAvatar">AVATAR</string>
+    <string name="notification_user_login">Пользователь с id:%1$s зашел</string>
 </resources>

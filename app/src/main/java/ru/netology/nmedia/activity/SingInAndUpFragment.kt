@@ -88,9 +88,21 @@ class SingInAndUpFragment : Fragment() {
                             pass = passwordFieldReg.editText?.text.toString(),
                             name = nameFieldReg.editText?.text.toString()
                         )
-                    } else {
-                        confirmPasswordFieldReg.error = getString(R.string.pass_error)
                     }
+                } else {
+                    confirmPasswordFieldReg.error = getString(R.string.pass_error)
+                }
+            }
+
+            confirmPasswordFieldRegInner.setOnFocusChangeListener { _, active ->
+                if (active) {
+                    confirmPasswordFieldReg.error = null
+                }
+            }
+
+            passwordFieldAuthInner.setOnFocusChangeListener { _, active ->
+                if (active) {
+                    passwordFieldAuth.error = null
                 }
             }
 
@@ -129,11 +141,13 @@ class SingInAndUpFragment : Fragment() {
             }
 
             regButton.setOnClickListener {
+                passwordFieldAuth.error = null
                 signUpContainer.visibility = View.VISIBLE
                 signInContainer.visibility = View.GONE
             }
 
             alreadyRegisteredButton.setOnClickListener {
+                confirmPasswordFieldReg.error = null
                 signInContainer.visibility = View.VISIBLE
                 signUpContainer.visibility = View.GONE
             }

@@ -2,10 +2,18 @@ package ru.netology.nmedia.auth
 
 import android.content.Context
 import androidx.core.content.edit
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.flow.*
-import ru.netology.nmedia.dto.Token
 
-class AppAuth private constructor(context: Context) {
+import ru.netology.nmedia.dto.Token
+import ru.netology.nmedia.workers.SendPushWorker
+
+class AppAuth private constructor(private val context: Context) {
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     private val _authState = MutableStateFlow<Token?>(null)
     val authState = _authState.asStateFlow()
@@ -19,6 +27,8 @@ class AppAuth private constructor(context: Context) {
         } else {
             _authState.value = Token(id, token)
         }
+
+//        sendPushToken()
     }
 
     // Сохранение учетной записи
@@ -29,6 +39,8 @@ class AppAuth private constructor(context: Context) {
             putString(TOKEN_KEY, token)
         }
         _authState.value = Token(id, token)
+
+        sendPushToken()
     }
 
     // все очистить
@@ -36,7 +48,37 @@ class AppAuth private constructor(context: Context) {
     fun removeAuth() {
         prefs.edit { clear() }
         _authState.value = null
+
+        sendPushToken()
     }
+
+    fun sendPushToken(token: String? = null) {
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            SendPushWorker.NAME,
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequestBuilder<SendPushWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .setInputData(
+                    Data.Builder()
+                        .putString(SendPushWorker.TOKEN_KEY, token)
+                        .build()
+                )
+                .build()
+            )
+
+//        CoroutineScope(Dispatchers.Default).launch {
+//            val tokenDto = PushToken(token ?: Firebase.messaging.token.await())
+//
+//            runCatching {
+//                PostApi.service.sendPushToken(tokenDto)
+//            }
+//        }
+    }
+
 
     companion object {
         private const val ID_KEY = "ID_KEY"

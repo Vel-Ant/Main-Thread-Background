@@ -22,6 +22,7 @@ import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.PushToken
 import ru.netology.nmedia.dto.User
 import java.util.concurrent.TimeUnit
 
@@ -83,6 +84,9 @@ interface PostApiService {
     @Multipart
     @POST("media")
     suspend fun uploadMedia(@Part media: MultipartBody.Part): Response<Media>
+
+    @POST("users/push-tokens")
+    suspend fun sendPushToken(@Body body: PushToken): Response<Unit>
 
     @FormUrlEncoded
     @POST("users/authentication")
