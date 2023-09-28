@@ -6,7 +6,7 @@ import androidx.work.WorkerParameters
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import kotlinx.coroutines.tasks.await
-import ru.netology.nmedia.api.PostApi
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.dto.PushToken
 
 class SendPushWorker(
@@ -20,13 +20,14 @@ class SendPushWorker(
          const val NAME = "SendPushWorker"
          const val TOKEN_KEY = "TOKEN_KEY"
      }
+
     override suspend fun doWork(): Result {
         val token = inputData.getString(TOKEN_KEY)
 
         val tokenDto = PushToken(token ?: Firebase.messaging.token.await())
 
         return runCatching {
-            PostApi.service.sendPushToken(tokenDto)
+            DependencyContainer.getInstance().apiService.sendPushToken(tokenDto)
         }.map {
             Result.success()
         }.getOrElse {

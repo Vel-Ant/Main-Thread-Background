@@ -25,18 +25,20 @@ class ImageViewFragment : Fragment() {
 
         val urlAttachment = arguments?.getString("url")
 
-        binding.apply {
-            fullScreen.visibility = View.GONE
-            urlAttachment?.let {
-                fullScreen.loadImageAttachment("${BASE_URL}/media/${it}")
+        with(binding) {
+            apply {
+                fullScreen.visibility = View.GONE
+                urlAttachment?.let {
+                    fullScreen.loadImageAttachment("${BASE_URL}/media/${it}")
+                }
+                fullScreen.visibility = View.VISIBLE
             }
-            fullScreen.visibility = View.VISIBLE
-        }
 
-        binding.fullScreen.setOnClickListener {
-            findNavController().navigateUp()
-        }
+            fullScreen.setOnClickListener {
+                findNavController().navigateUp()
+            }
 
-        return binding.root
+            return root
+        }
     }
 }

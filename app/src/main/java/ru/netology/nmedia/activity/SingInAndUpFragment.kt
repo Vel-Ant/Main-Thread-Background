@@ -16,15 +16,21 @@ import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
-import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentSingInAndUpBinding
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.viewmodel.SignInAndUpViewModel
+import ru.netology.nmedia.viewmodel.ViewModelFactory
 
 class SingInAndUpFragment : Fragment() {
 
-    private val signInAndUpViewModel by viewModels<SignInAndUpViewModel>()
+    private val dependencyContainer = DependencyContainer.getInstance()
+    private val signInAndUpViewModel: SignInAndUpViewModel by viewModels(
+        factoryProducer = {
+            ViewModelFactory(dependencyContainer.repository, dependencyContainer.appAuth)
+        }
+    )
 
     val pickAvatarLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -54,15 +60,41 @@ class SingInAndUpFragment : Fragment() {
             false
         )
 
-        if (arguments?.textArg == "signIn") {
-            binding.signInContainer.visibility = View.VISIBLE
-            binding.signUpContainer.visibility = View.GONE
-        } else if (arguments?.textArg == "signUp") {
-            binding.signUpContainer.visibility = View.VISIBLE
-            binding.signInContainer.visibility = View.GONE
-        }
-
         with(binding) {
+
+            if (arguments?.textArg == "signIn") {
+                signInContainer.visibility = View.VISIBLE
+                signUpContainer.visibility = View.GONE
+            } else if (arguments?.textArg == "signUp") {
+                signUpContainer.visibility = View.VISIBLE
+                signInContainer.visibility = View.GONE
+            }
+
+            signInAndUpViewModel.state.observe(viewLifecycleOwner) { state ->
+                if (state.loginError) {
+                    passwordFieldAuth.error = getString(R.string.login_error)
+                } else if (state.error) {
+                    retryButton.visibility = View.VISIBLE
+                    when (state.codeResponse) {
+                        in 300..399 -> error300.visibility = View.VISIBLE
+                        in 400..499 -> error400.visibility = View.VISIBLE
+                        in 500..599 -> error500.visibility = View.VISIBLE
+                        else -> anotherError.visibility = View.VISIBLE
+                    }
+                } else {
+                    retryButton.visibility = View.GONE
+                    error300.visibility = View.GONE
+                    error400.visibility = View.GONE
+                    error500.visibility = View.GONE
+                    anotherError.visibility = View.GONE
+                }
+            }
+
+            signInAndUpViewModel.user.observe(viewLifecycleOwner) {
+                dependencyContainer.appAuth.setAuth(it.id, it.token.toString())
+                AndroidUtils.hideKeyboard(requireView())
+                findNavController().navigateUp()
+            }
 
             signInButton.setOnClickListener {
                 signInAndUpViewModel.login(
@@ -92,25 +124,6 @@ class SingInAndUpFragment : Fragment() {
                 } else {
                     confirmPasswordFieldReg.error = getString(R.string.pass_error)
                 }
-            }
-
-            confirmPasswordFieldRegInner.setOnFocusChangeListener { _, active ->
-                if (active) {
-                    confirmPasswordFieldReg.error = null
-                }
-            }
-
-            passwordFieldAuthInner.setOnFocusChangeListener { _, active ->
-                if (active) {
-                    passwordFieldAuth.error = null
-                }
-            }
-
-            signInAndUpViewModel.avatar.observe(viewLifecycleOwner) {avatar ->
-                if (avatar == null) {
-                    return@observe
-                }
-                previewAvatar.setImageURI(avatar.uri)
             }
 
             gallery.setOnClickListener {
@@ -161,33 +174,27 @@ class SingInAndUpFragment : Fragment() {
                     signUpContainer.visibility = View.GONE
                 }
             }
-        }
 
-        signInAndUpViewModel.state.observe(viewLifecycleOwner) { state ->
-            if (state.loginError) {
-                binding.passwordFieldAuth.error = getString(R.string.login_error)
-            } else if (state.error) {
-                binding.retryButton.visibility = View.VISIBLE
-                when (state.codeResponse) {
-                    in 300..399 -> binding.error300.visibility = View.VISIBLE
-                    in 400..499 -> binding.error400.visibility = View.VISIBLE
-                    in 500..599 -> binding.error500.visibility = View.VISIBLE
-                    else -> binding.anotherError.visibility = View.VISIBLE
+            confirmPasswordFieldRegInner.setOnFocusChangeListener { _, active ->
+                if (active) {
+                    confirmPasswordFieldReg.error = null
                 }
-            } else {
-                binding.retryButton.visibility = View.GONE
-                binding.error300.visibility = View.GONE
-                binding.error400.visibility = View.GONE
-                binding.error500.visibility = View.GONE
-                binding.anotherError.visibility = View.GONE
             }
-        }
 
-        signInAndUpViewModel.user.observe(viewLifecycleOwner) {
-            AppAuth.getInstance().setAuth(it.id, it.token.toString())
-            AndroidUtils.hideKeyboard(requireView())
-            findNavController().navigateUp()
+            passwordFieldAuthInner.setOnFocusChangeListener { _, active ->
+                if (active) {
+                    passwordFieldAuth.error = null
+                }
+            }
+
+            signInAndUpViewModel.avatar.observe(viewLifecycleOwner) {avatar ->
+                if (avatar == null) {
+                    return@observe
+                }
+                previewAvatar.setImageURI(avatar.uri)
+            }
+
+            return root
         }
-        return binding.root
     }
 }

@@ -4,14 +4,15 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import ru.netology.nmedia.api.PostApi
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.User
 import ru.netology.nmedia.errors.NumberResponseError
 
-class UserRepository {
+class UserRepository(
+) {
     suspend fun updateUser(login: String, pass: String): User {
-        val response = PostApi.service.updateUser(login, pass)
+        val response = DependencyContainer.getInstance().apiService.updateUser(login, pass)
 
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())
@@ -20,7 +21,7 @@ class UserRepository {
     }
 
     suspend fun registerUser(login: String, pass: String, name: String): User {
-        val response = PostApi.service.registerUser(login, pass, name)
+        val response = DependencyContainer.getInstance().apiService.registerUser(login, pass, name)
 
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())
@@ -41,7 +42,7 @@ class UserRepository {
             body = media.file.asRequestBody()
         )
 
-        val response = PostApi.service.registerWithPhoto(
+        val response = DependencyContainer.getInstance().apiService.registerWithPhoto(
             login = login.toRequestBody("text/plain".toMediaType()),
             pass = pass.toRequestBody("text/plain".toMediaType()),
             name = name.toRequestBody("text/plain".toMediaType()),

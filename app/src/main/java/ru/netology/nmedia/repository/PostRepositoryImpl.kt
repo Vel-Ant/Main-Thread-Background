@@ -8,22 +8,22 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import ru.netology.nmedia.api.PostApi
+import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Media
-import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.errors.NumberResponseError
 import ru.netology.nmedia.util.AttachmentType
 import java.io.File
-import java.io.IOException
 import java.util.concurrent.CancellationException
+import javax.inject.Inject
 
-class PostRepositoryImpl(
+class PostRepositoryImpl @Inject constructor(
     private val dao: PostDao,
+    private val apiService: PostApiService
 ) : PostRepository {
 
     override val data: Flow<List<Post>> = dao.getAllVisible().map {
@@ -35,7 +35,7 @@ class PostRepositoryImpl(
         while (true) {
             try {
                 delay(10_000)
-                val response = PostApi.service.getNewer(id)
+                val response = apiService.getNewer(id)
 
                 val posts = response.body().orEmpty()
 
@@ -52,7 +52,7 @@ class PostRepositoryImpl(
     }
 
     override suspend fun getAll() {
-        val response = PostApi.service.getAll()
+        val response = apiService.getAll()
 
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())
@@ -68,7 +68,7 @@ class PostRepositoryImpl(
     }
 
     override suspend fun save(post: Post) {
-        val response = PostApi.service.save(post)
+        val response = apiService.save(post)
 
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())
@@ -81,7 +81,7 @@ class PostRepositoryImpl(
     override suspend fun saveWithAttachment(post: Post, file: File) {
         val media = uploadMedia(file)
 
-        val response = PostApi.service.save(
+        val response = apiService.save(
             post.copy(
                 attachment = Attachment(
                     url = media.id,
@@ -103,7 +103,7 @@ class PostRepositoryImpl(
             "file", file.name, file.asRequestBody()
         )
 
-        val response = PostApi.service.uploadMedia(formData)
+        val response = apiService.uploadMedia(formData)
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())
         }
@@ -113,7 +113,7 @@ class PostRepositoryImpl(
 
     override suspend fun likeById(id: Long) {
         dao.likeById(id)
-        val response = PostApi.service.likeById(id)
+        val response = apiService.likeById(id)
 
         if (!response.isSuccessful) {
             dao.likeById(id)
@@ -126,7 +126,7 @@ class PostRepositoryImpl(
 
     override suspend fun unlikeById(id: Long) {
         dao.likeById(id)
-        val response = PostApi.service.unlikeById(id)
+        val response = apiService.unlikeById(id)
 
         if (!response.isSuccessful) {
             dao.likeById(id)
@@ -139,7 +139,7 @@ class PostRepositoryImpl(
 
     override suspend fun removeById(id: Long) {
         dao.removeById(id)
-        val response = PostApi.service.removeById(id)
+        val response = apiService.removeById(id)
 
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())

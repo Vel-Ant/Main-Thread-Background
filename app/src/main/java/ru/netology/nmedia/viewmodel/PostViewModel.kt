@@ -1,23 +1,27 @@
 package ru.netology.nmedia.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.errors.NumberResponseError
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
-import ru.netology.nmedia.repository.*
+import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.AttachmentType
 import ru.netology.nmedia.util.SingleLiveEvent
+import javax.inject.Inject
 
 private val empty = Post(
     id = 0,
@@ -32,16 +36,16 @@ private val empty = Post(
     ownedByMe = false
 )
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
-    // упрощённый вариант
-    private val repository: PostRepository = PostRepositoryImpl(
-        AppDb.getInstance(application).postDao()
-    )
+class PostViewModel @Inject constructor(
+    private val repository: PostRepository,
+    private val appAuth: AppAuth
+) : ViewModel() {
+
     private val _state = MutableLiveData(FeedModelState())
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: LiveData<FeedModel> = AppAuth.getInstance().authState.flatMapLatest { token ->
+    val data: LiveData<FeedModel> = appAuth.authState.flatMapLatest { token ->
         repository.data.map { posts ->
             FeedModel(posts.map {
                 it.copy(ownedByMe = it.authorId == token?.id)

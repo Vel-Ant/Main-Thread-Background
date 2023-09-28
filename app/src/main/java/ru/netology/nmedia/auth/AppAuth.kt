@@ -8,12 +8,15 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import kotlinx.coroutines.flow.*
-
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.workers.SendPushWorker
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AppAuth private constructor(private val context: Context) {
+@Singleton
+class AppAuth @Inject constructor(private val context: Context) {
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     private val _authState = MutableStateFlow<Token?>(null)
     val authState = _authState.asStateFlow()
@@ -74,7 +77,7 @@ class AppAuth private constructor(private val context: Context) {
 //            val tokenDto = PushToken(token ?: Firebase.messaging.token.await())
 //
 //            runCatching {
-//                PostApi.service.sendPushToken(tokenDto)
+//                DependencyContainer.getInstance().apiService.sendPushToken(tokenDto)
 //            }
 //        }
     }
@@ -83,13 +86,5 @@ class AppAuth private constructor(private val context: Context) {
     companion object {
         private const val ID_KEY = "ID_KEY"
         private const val TOKEN_KEY = "TOKEN_KEY"
-
-        @Volatile
-        private var INSTANCE: AppAuth? = null
-        fun getInstance(): AppAuth = requireNotNull(INSTANCE)
-
-        fun initApp(context: Context) {
-            INSTANCE = AppAuth(context)
-        }
     }
 }

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.imageview.loadImageAttachment
 import ru.netology.nmedia.imageview.loadImageAvatar
@@ -45,7 +46,7 @@ class PostViewHolder(
     private val onInteractionListener: OnInteractionListener,
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    private val authViewModel: AuthViewModel = AuthViewModel()
+    private val authViewModel: AuthViewModel = AuthViewModel(DependencyContainer.getInstance().appAuth)
 
     fun bind(post: Post) {
         binding.apply {

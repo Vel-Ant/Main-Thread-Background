@@ -13,7 +13,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
-import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.di.DependencyContainer
 import kotlin.random.Random
 
 
@@ -38,25 +38,25 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        val userId = AppAuth.getInstance().authState.value?.id
+        val userId = DependencyContainer.getInstance().appAuth.authState.value?.id
         val push = gson.fromJson(message.data[content], Push::class.java)
 
         message.data[action]?.let {
-           when (Action.valueOf(it)) {
-              Action.LIKE -> handleLike(gson.fromJson(message.data[content], Like::class.java))
-           }
+            when (Action.valueOf(it)) {
+                Action.LIKE -> handleLike(gson.fromJson(message.data[content], Like::class.java))
+            }
         }
 
         if (push.recipientId == null || push.recipientId == userId) {
             sendingNotification(push)
         } else {
-            AppAuth.getInstance().sendPushToken()
+            DependencyContainer.getInstance().appAuth.sendPushToken()
         }
     }
 
     override fun onNewToken(token: String) {
         println(token)
-        AppAuth.getInstance().sendPushToken(token)
+        DependencyContainer.getInstance().appAuth.sendPushToken(token)
     }
 
     private fun handleLike(content: Like) {
@@ -89,6 +89,7 @@ class FCMService : FirebaseMessagingService() {
 
         notify(notification)
     }
+
     private fun notify(notification: Notification) {
         if (
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||

@@ -6,17 +6,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.User
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.UserRepository
 import java.io.File
+import javax.inject.Inject
 
-class SignInAndUpViewModel : ViewModel() {
+class SignInAndUpViewModel @Inject constructor(
+) : ViewModel() {
 
     private val repository = UserRepository()
 

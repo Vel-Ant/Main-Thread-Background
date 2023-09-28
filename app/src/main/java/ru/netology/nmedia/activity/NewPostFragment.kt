@@ -19,10 +19,12 @@ import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.viewmodel.PostViewModel
+import ru.netology.nmedia.viewmodel.ViewModelFactory
 
 class NewPostFragment : Fragment() {
 
@@ -30,7 +32,12 @@ class NewPostFragment : Fragment() {
         var Bundle.textArg: String? by StringArg
     }
 
-    private val viewModel: PostViewModel by activityViewModels()
+    private val dependencyContainer = DependencyContainer.getInstance()
+    private val viewModel: PostViewModel by activityViewModels(
+        factoryProducer = {
+            ViewModelFactory(dependencyContainer.repository, dependencyContainer.appAuth)
+        }
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,33 +49,6 @@ class NewPostFragment : Fragment() {
             container,
             false
         )
-
-        arguments?.textArg
-            ?.let(binding.edit::setText)
-
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            if (state.error) {
-                binding.retryButtonNewPost.visibility = View.VISIBLE
-                when (state.codeResponse) {
-                    in 300..399 -> binding.error300NewPost.visibility = View.VISIBLE
-                    in 400..499 -> binding.error400NewPost.visibility = View.VISIBLE
-                    in 500..599 -> binding.error500NewPost.visibility = View.VISIBLE
-                    else -> binding.anotherErrorNewPost.visibility = View.VISIBLE
-                }
-            } else {
-                binding.retryButtonNewPost.visibility = View.GONE
-                binding.error300NewPost.visibility = View.GONE
-                binding.error400NewPost.visibility = View.GONE
-                binding.error500NewPost.visibility = View.GONE
-                binding.anotherErrorNewPost.visibility = View.GONE
-            }
-        }
-
-        binding.retryButtonNewPost.setOnClickListener {
-            AndroidUtils.hideKeyboard(requireView())
-            viewModel.loadPosts()
-            findNavController().navigateUp()
-        }
 
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -99,6 +79,7 @@ class NewPostFragment : Fragment() {
                             Snackbar.LENGTH_LONG
                         ).show()
                     }
+
                     Activity.RESULT_OK -> {
                         val uri = requireNotNull(it.data?.data)
                         viewModel.setPhoto(PhotoModel(uri = uri, file = uri.toFile()))
@@ -106,47 +87,77 @@ class NewPostFragment : Fragment() {
                 }
             }
 
-        binding.gallery.setOnClickListener {
-            ImagePicker.with(this)
-                .crop()
-                .compress(2048)
-                .provider(ImageProvider.GALLERY)
-                .galleryOnly()
-                .galleryMimeTypes(
-                    arrayOf(
-                        "image/png",
-                        "image/jpeg",
-                    )
-                )
-                .createIntent(pickPhotoLauncher::launch)
-        }
+        with(binding) {
+            arguments?.textArg
+                ?.let(edit::setText)
 
-        binding.takePhoto.setOnClickListener {
-            ImagePicker.with(this)
-                .crop()
-                .compress(2048)
-                .provider(ImageProvider.CAMERA)
-                .createIntent(pickPhotoLauncher::launch)
-        }
-
-        binding.clear.setOnClickListener {
-            viewModel.clearPhoto()
-        }
-
-        viewModel.photo.observe(viewLifecycleOwner) {photo ->
-            if (photo == null) {
-                binding.previewContainer.visibility = View.GONE
-                return@observe
+            viewModel.state.observe(viewLifecycleOwner) { state ->
+                if (state.error) {
+                    retryButtonNewPost.visibility = View.VISIBLE
+                    when (state.codeResponse) {
+                        in 300..399 -> error300NewPost.visibility = View.VISIBLE
+                        in 400..499 -> error400NewPost.visibility = View.VISIBLE
+                        in 500..599 -> error500NewPost.visibility = View.VISIBLE
+                        else -> anotherErrorNewPost.visibility = View.VISIBLE
+                    }
+                } else {
+                    retryButtonNewPost.visibility = View.GONE
+                    error300NewPost.visibility = View.GONE
+                    error400NewPost.visibility = View.GONE
+                    error500NewPost.visibility = View.GONE
+                    anotherErrorNewPost.visibility = View.GONE
+                }
             }
 
-            binding.previewContainer.visibility = View.VISIBLE
-            binding.preview.setImageURI(photo.uri)
-        }
+            viewModel.photo.observe(viewLifecycleOwner) { photo ->
+                if (photo == null) {
+                    binding.previewContainer.visibility = View.GONE
+                    return@observe
+                }
 
-        viewModel.postCreated.observe(viewLifecycleOwner) {
-            viewModel.loadPosts()
-            findNavController().navigateUp()
+                previewContainer.visibility = View.VISIBLE
+                preview.setImageURI(photo.uri)
+            }
+
+            viewModel.postCreated.observe(viewLifecycleOwner) {
+                viewModel.loadPosts()
+                findNavController().navigateUp()
+            }
+
+            retryButtonNewPost.setOnClickListener {
+                AndroidUtils.hideKeyboard(requireView())
+                viewModel.loadPosts()
+                findNavController().navigateUp()
+            }
+
+            gallery.setOnClickListener {
+                ImagePicker.with(this@NewPostFragment)
+                    .crop()
+                    .compress(2048)
+                    .provider(ImageProvider.GALLERY)
+                    .galleryOnly()
+                    .galleryMimeTypes(
+                        arrayOf(
+                            "image/png",
+                            "image/jpeg",
+                        )
+                    )
+                    .createIntent(pickPhotoLauncher::launch)
+            }
+
+            takePhoto.setOnClickListener {
+                ImagePicker.with(this@NewPostFragment)
+                    .crop()
+                    .compress(2048)
+                    .provider(ImageProvider.CAMERA)
+                    .createIntent(pickPhotoLauncher::launch)
+            }
+
+            clear.setOnClickListener {
+                viewModel.clearPhoto()
+            }
+
+            return root
         }
-        return binding.root
     }
 }

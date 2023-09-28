@@ -17,25 +17,41 @@ import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.viewmodel.PostViewModel
+import ru.netology.nmedia.viewmodel.ViewModelFactory
 
-class FeedFragment : Fragment() {
+class FeedFragment() : Fragment() {
 
-    private val postViewModel by viewModels<PostViewModel>()
-    private val authViewModel by viewModels<AuthViewModel>()
+    private val dependencyContainer = DependencyContainer.getInstance()
+    private val viewModel: PostViewModel by viewModels(
+        factoryProducer = {
+            ViewModelFactory(dependencyContainer.repository, dependencyContainer.appAuth)
+        }
+    )
+
+    private val authViewModel: AuthViewModel by viewModels(
+        factoryProducer = {
+            ViewModelFactory(dependencyContainer.repository, dependencyContainer.appAuth)
+        }
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentFeedBinding.inflate(inflater, container, false)
+        val binding = FragmentFeedBinding.inflate(
+            inflater,
+            container,
+            false
+        )
 
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post) {
-                postViewModel.edit(post)
+                viewModel.edit(post)
                 findNavController().navigate(
                     R.id.action_feedFragment_to_newPostFragment,
                     Bundle().apply { textArg = post.content })
@@ -43,14 +59,14 @@ class FeedFragment : Fragment() {
 
             override fun onLike(post: Post) {
                 if (post.likedByMe) {
-                    postViewModel.unlikeById(post.id)
+                    viewModel.unlikeById(post.id)
                 } else {
-                    postViewModel.likeById(post.id)
+                    viewModel.likeById(post.id)
                 }
             }
 
             override fun onRemove(post: Post) {
-                postViewModel.removeById(post.id)
+                viewModel.removeById(post.id)
             }
 
             override fun onShare(post: Post) {
@@ -66,7 +82,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLoadPost() {
-                postViewModel.loadPosts()
+                viewModel.loadPosts()
             }
 
             override fun onImageView(url: String) {
@@ -75,76 +91,84 @@ class FeedFragment : Fragment() {
                     Bundle().apply { putString("url", url) })
             }
         })
-        binding.list.adapter = adapter
-        postViewModel.state.observe(viewLifecycleOwner) { state ->
-            binding.progress.isVisible = state.loading
-            binding.swiperefresh.isRefreshing = state.refreshing
 
-            if (state.error) {
-                binding.retryButton.visibility = View.VISIBLE
-                when (state.codeResponse) {
-                    in 300..399 -> binding.error300.visibility = View.VISIBLE
-                    in 400..499 -> binding.error400.visibility = View.VISIBLE
-                    in 500..599 -> binding.error500.visibility = View.VISIBLE
-                    else -> binding.anotherError.visibility = View.VISIBLE
+        with(binding) {
+            list.adapter = adapter
+
+            adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                    if (positionStart == 0) {
+                        list.smoothScrollToPosition(0)
+                    }
                 }
-            } else {
-                binding.retryButton.visibility = View.GONE
-                binding.error300.visibility = View.GONE
-                binding.error400.visibility = View.GONE
-                binding.error500.visibility = View.GONE
-                binding.anotherError.visibility = View.GONE
-            }
-        }
+            })
 
-        postViewModel.newerCount.observe(viewLifecycleOwner) {
-            if (it >= 1) {
-                binding.newerPostsButton.visibility = View.VISIBLE
-                Log.d("FeedFragment", "newer count: $id")
-            } else {
-                binding.newerPostsButton.visibility = View.GONE
-            }
-        }
+            viewModel.state.observe(viewLifecycleOwner) { state ->
+                progress.isVisible = state.loading
+                swiperefresh.isRefreshing = state.refreshing
 
-        binding.newerPostsButton.setOnClickListener {
-            binding.newerPostsButton
-            postViewModel.loadAllNewPosts()
-        }
-
-        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                if (positionStart == 0) {
-                    binding.list.smoothScrollToPosition(0)
+                if (state.error) {
+                    retryButton.visibility = View.VISIBLE
+                    when (state.codeResponse) {
+                        in 300..399 -> error300.visibility = View.VISIBLE
+                        in 400..499 -> error400.visibility = View.VISIBLE
+                        in 500..599 -> error500.visibility = View.VISIBLE
+                        else -> anotherError.visibility = View.VISIBLE
+                    }
+                } else {
+                    retryButton.visibility = View.GONE
+                    error300.visibility = View.GONE
+                    error400.visibility = View.GONE
+                    error500.visibility = View.GONE
+                    anotherError.visibility = View.GONE
                 }
             }
-        })
 
-        postViewModel.data.observe(viewLifecycleOwner) {
-            binding.emptyText.isVisible = it.empty
-            adapter.submitList(it.posts)
-        }
-
-        binding.retryButton.setOnClickListener {
-            postViewModel.loadPosts()
-        }
-
-        binding.fab.setOnClickListener {
-            if (authViewModel.authenticated) {
-                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-            } else {
-                Toast.makeText(requireContext(), "Only registered users can create a post", Toast.LENGTH_LONG)
-                    .show()
+            viewModel.newerCount.observe(viewLifecycleOwner) {
+                if (it >= 1) {
+                    newerPostsButton.visibility = View.VISIBLE
+                    Log.d("FeedFragment", "newer count: $id")
+                } else {
+                    newerPostsButton.visibility = View.GONE
+                }
             }
+
+            viewModel.data.observe(viewLifecycleOwner) {
+                emptyText.isVisible = it.empty
+                adapter.submitList(it.posts)
+            }
+
+            swiperefresh.setColorSchemeResources(
+                android.R.color.holo_orange_light
+            )
+
+            swiperefresh.setOnRefreshListener {
+                viewModel.refresh()
+            }
+
+            newerPostsButton.setOnClickListener {
+                newerPostsButton
+                viewModel.loadAllNewPosts()
+            }
+
+            retryButton.setOnClickListener {
+                viewModel.loadPosts()
+            }
+
+            fab.setOnClickListener {
+                if (authViewModel.authenticated) {
+                    findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Only registered users can create a post",
+                        Toast.LENGTH_LONG
+                    )
+                        .show()
+                }
+            }
+
+            return root
         }
-
-        binding.swiperefresh.setColorSchemeResources(
-            android.R.color.holo_orange_light
-        )
-
-        binding.swiperefresh.setOnRefreshListener {
-            postViewModel.refresh()
-        }
-
-        return binding.root
     }
 }
