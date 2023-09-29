@@ -11,12 +11,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.CardPostBinding
-import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.imageview.loadImageAttachment
 import ru.netology.nmedia.imageview.loadImageAvatar
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import javax.inject.Inject
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -29,10 +30,11 @@ interface OnInteractionListener {
 
 class PostsAdapter(
     private val onInteractionListener: OnInteractionListener,
+    private val appAuth: AppAuth
 ) : ListAdapter<Post, PostViewHolder>(PostDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(binding, onInteractionListener)
+        return PostViewHolder(binding, onInteractionListener, appAuth)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -41,12 +43,13 @@ class PostsAdapter(
     }
 }
 
-class PostViewHolder(
+class PostViewHolder @Inject constructor(
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
+    private val appAuth: AppAuth,
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    private val authViewModel: AuthViewModel = AuthViewModel(DependencyContainer.getInstance().appAuth)
+    private val authViewModel: AuthViewModel = AuthViewModel(appAuth)
 
     fun bind(post: Post) {
         binding.apply {
@@ -99,7 +102,7 @@ class PostViewHolder(
                     onInteractionListener.onLike(post)
                 } else {
                     like.isChecked = false
-                    Toast.makeText(it.context,"Only registered users can like", Toast.LENGTH_LONG)
+                    Toast.makeText(it.context, "Only registered users can like", Toast.LENGTH_LONG)
                         .show()
                 }
             }

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.User
@@ -14,10 +15,10 @@ import ru.netology.nmedia.repository.UserRepository
 import java.io.File
 import javax.inject.Inject
 
+@HiltViewModel
 class SignInAndUpViewModel @Inject constructor(
+    private val repository: UserRepository
 ) : ViewModel() {
-
-    private val repository = UserRepository()
 
     private val _state = MutableLiveData(FeedModelState())
     val state: LiveData<FeedModelState>

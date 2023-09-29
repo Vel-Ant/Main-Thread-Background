@@ -4,15 +4,18 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import ru.netology.nmedia.di.DependencyContainer
+import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.dto.User
 import ru.netology.nmedia.errors.NumberResponseError
+import javax.inject.Inject
 
-class UserRepository(
+class UserRepository @Inject constructor(
+    private val apiService: PostApiService
 ) {
+
     suspend fun updateUser(login: String, pass: String): User {
-        val response = DependencyContainer.getInstance().apiService.updateUser(login, pass)
+        val response = apiService.updateUser(login, pass)
 
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())
@@ -21,7 +24,7 @@ class UserRepository(
     }
 
     suspend fun registerUser(login: String, pass: String, name: String): User {
-        val response = DependencyContainer.getInstance().apiService.registerUser(login, pass, name)
+        val response = apiService.registerUser(login, pass, name)
 
         if (!response.isSuccessful) {
             throw NumberResponseError(response.code())
@@ -42,7 +45,7 @@ class UserRepository(
             body = media.file.asRequestBody()
         )
 
-        val response = DependencyContainer.getInstance().apiService.registerWithPhoto(
+        val response = apiService.registerWithPhoto(
             login = login.toRequestBody("text/plain".toMediaType()),
             pass = pass.toRequestBody("text/plain".toMediaType()),
             name = name.toRequestBody("text/plain".toMediaType()),

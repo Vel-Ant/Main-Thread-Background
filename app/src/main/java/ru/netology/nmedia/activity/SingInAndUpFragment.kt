@@ -14,23 +14,23 @@ import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.github.dhaval2404.imagepicker.constant.ImageProvider
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentSingInAndUpBinding
-import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.viewmodel.SignInAndUpViewModel
-import ru.netology.nmedia.viewmodel.ViewModelFactory
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SingInAndUpFragment : Fragment() {
 
-    private val dependencyContainer = DependencyContainer.getInstance()
-    private val signInAndUpViewModel: SignInAndUpViewModel by viewModels(
-        factoryProducer = {
-            ViewModelFactory(dependencyContainer.repository, dependencyContainer.appAuth)
-        }
-    )
+    @Inject
+    lateinit var appAuth: AppAuth
+
+    private val signInAndUpViewModel: SignInAndUpViewModel by viewModels()
 
     val pickAvatarLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -91,7 +91,7 @@ class SingInAndUpFragment : Fragment() {
             }
 
             signInAndUpViewModel.user.observe(viewLifecycleOwner) {
-                dependencyContainer.appAuth.setAuth(it.id, it.token.toString())
+                appAuth.setAuth(it.id, it.token.toString())
                 AndroidUtils.hideKeyboard(requireView())
                 findNavController().navigateUp()
             }

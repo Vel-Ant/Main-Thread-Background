@@ -12,16 +12,21 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
-import ru.netology.nmedia.di.DependencyContainer
+import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 import kotlin.random.Random
 
-
+@AndroidEntryPoint
 class FCMService : FirebaseMessagingService() {
     private val action = "action"
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
+
+    @Inject
+    lateinit var appAuth: AppAuth
 
     override fun onCreate() {
         super.onCreate()
@@ -38,7 +43,7 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        val userId = DependencyContainer.getInstance().appAuth.authState.value?.id
+        val userId = appAuth.authState.value?.id
         val push = gson.fromJson(message.data[content], Push::class.java)
 
         message.data[action]?.let {
@@ -50,13 +55,13 @@ class FCMService : FirebaseMessagingService() {
         if (push.recipientId == null || push.recipientId == userId) {
             sendingNotification(push)
         } else {
-            DependencyContainer.getInstance().appAuth.sendPushToken()
+            appAuth.sendPushToken()
         }
     }
 
     override fun onNewToken(token: String) {
         println(token)
-        DependencyContainer.getInstance().appAuth.sendPushToken(token)
+        appAuth.sendPushToken(token)
     }
 
     private fun handleLike(content: Like) {
