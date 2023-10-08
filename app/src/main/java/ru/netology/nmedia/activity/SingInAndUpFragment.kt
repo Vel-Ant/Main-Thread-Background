@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -21,6 +22,7 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentSingInAndUpBinding
 import ru.netology.nmedia.dto.MediaUpload
 import ru.netology.nmedia.util.AndroidUtils
+import ru.netology.nmedia.viewmodel.PostViewModel
 import ru.netology.nmedia.viewmodel.SignInAndUpViewModel
 import javax.inject.Inject
 
@@ -29,7 +31,7 @@ class SingInAndUpFragment : Fragment() {
 
     @Inject
     lateinit var appAuth: AppAuth
-
+    private val viewModel: PostViewModel by activityViewModels()
     private val signInAndUpViewModel: SignInAndUpViewModel by viewModels()
 
     val pickAvatarLauncher =

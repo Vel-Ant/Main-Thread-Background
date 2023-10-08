@@ -6,11 +6,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
@@ -49,13 +53,11 @@ class PostViewModel @Inject constructor(
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: LiveData<FeedModel> = appAuth.authState.flatMapLatest { token ->
+    val data: Flow<PagingData<Post>> = appAuth.authState.flatMapLatest { token ->
         repository.data.map { posts ->
-            FeedModel(posts.map {
-                it.copy(ownedByMe = it.authorId == token?.id)
-            }, posts.isEmpty())
+            posts.map { it.copy(ownedByMe = it.authorId == token?.id) }
         }
-    }.asLiveData(Dispatchers.Default)
+    }.flowOn(Dispatchers.Default)
 
     private val edited = MutableLiveData(empty)
 
@@ -63,10 +65,18 @@ class PostViewModel @Inject constructor(
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
-    val newerCount: LiveData<Int> = data.switchMap {
+    val dataCount: LiveData<FeedModel> = appAuth.authState.flatMapLatest { token ->
+        repository.dataCount.map { posts ->
+                FeedModel(
+                    posts.map { it.copy(ownedByMe = it.authorId == token?.id) },
+                    posts.isEmpty()
+                )
+            }
+    }.asLiveData(Dispatchers.Default)
+
+    val newerCount: LiveData<Int> = dataCount.switchMap {
         val id = it.posts.firstOrNull()?.id ?: 0L
         repository.getNewerCount(id).asLiveData(Dispatchers.Default)
-
     }
 
     private val _photo = MutableLiveData<PhotoModel?>(null)
@@ -77,49 +87,10 @@ class PostViewModel @Inject constructor(
         loadPosts()
     }
 
-    fun refresh() {
-        _state.value = FeedModelState(refreshing = true)
-        viewModelScope.launch {
-            try {
-                repository.getAll()
-                _state.value = FeedModelState()
-            } catch (e: Exception) {
-                _state.value = FeedModelState(error = false)
-                if (e is NumberResponseError) {
-                    _state.value = FeedModelState(
-                        codeResponse = e.code, error = true
-                    )
-                } else {
-                    _state.value = FeedModelState(error = true)
-                }
-            }
-        }
-    }
-
     fun loadPosts() {
         _state.value = FeedModelState(loading = true)
         viewModelScope.launch {
             try {
-                repository.getAll()
-                _state.value = FeedModelState()
-            } catch (e: Exception) {
-                _state.value = FeedModelState(error = false)
-                if (e is NumberResponseError) {
-                    _state.value = FeedModelState(
-                        codeResponse = e.code, error = true
-                    )
-                } else {
-                    _state.value = FeedModelState(error = true)
-                }
-            }
-        }
-    }
-
-    fun loadAllNewPosts() {
-        _state.value = FeedModelState(loading = true)
-        viewModelScope.launch {
-            try {
-                repository.getAllNewPosts()
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = false)
@@ -214,7 +185,6 @@ class PostViewModel @Inject constructor(
     }
 
     fun removeById(id: Long) {
-        val old = data.value?.posts.orEmpty()
         viewModelScope.launch {
             try {
                 repository.removeById(id)
@@ -222,7 +192,6 @@ class PostViewModel @Inject constructor(
                     error = false, codeResponse = null
                 )
             } catch (e: Exception) {
-                data.value?.copy(posts = old)
                 _state.value = FeedModelState(error = false)
                 if (e is NumberResponseError) {
                     _state.value = FeedModelState(

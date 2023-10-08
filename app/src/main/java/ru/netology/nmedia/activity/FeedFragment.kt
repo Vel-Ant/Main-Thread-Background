@@ -2,7 +2,6 @@ package ru.netology.nmedia.activity
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,10 +9,16 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -77,10 +82,6 @@ class FeedFragment() : Fragment() {
                 startActivity(shareIntent)
             }
 
-            override fun onLoadPost() {
-                viewModel.loadPosts()
-            }
-
             override fun onImageView(url: String) {
                 findNavController().navigate(
                     R.id.action_feedFragment_to_imageViewFragment,
@@ -98,6 +99,10 @@ class FeedFragment() : Fragment() {
                     }
                 }
             })
+
+            authViewModel.data.observe(viewLifecycleOwner) {
+                adapter.refresh()
+            }
 
             viewModel.state.observe(viewLifecycleOwner) { state ->
                 progress.isVisible = state.loading
@@ -123,32 +128,38 @@ class FeedFragment() : Fragment() {
             viewModel.newerCount.observe(viewLifecycleOwner) {
                 if (it >= 1) {
                     newerPostsButton.visibility = View.VISIBLE
-                    Log.d("FeedFragment", "newer count: $id")
+//                    Log.d("FeedFragment", "newer count: $id")
+                    newerPostsButton.setOnClickListener {
+                        newerPostsButton.visibility = View.GONE
+                        adapter.refresh()
+                    }
                 } else {
                     newerPostsButton.visibility = View.GONE
                 }
             }
 
-            viewModel.data.observe(viewLifecycleOwner) {
-                emptyText.isVisible = it.empty
-                adapter.submitList(it.posts)
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewModel.data.collectLatest(adapter::submitData)
+                }
+            }
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    adapter.loadStateFlow.collectLatest { state ->
+                        swiperefresh.isRefreshing = state.refresh is LoadState.Loading ||
+                                    state.prepend is LoadState.Loading ||
+                                    state.append is LoadState.Loading
+                    }
+                }
             }
 
             swiperefresh.setColorSchemeResources(
                 android.R.color.holo_orange_light
             )
 
-            swiperefresh.setOnRefreshListener {
-                viewModel.refresh()
-            }
-
-            newerPostsButton.setOnClickListener {
-                newerPostsButton
-                viewModel.loadAllNewPosts()
-            }
-
             retryButton.setOnClickListener {
-                viewModel.loadPosts()
+                adapter.refresh()
             }
 
             fab.setOnClickListener {
