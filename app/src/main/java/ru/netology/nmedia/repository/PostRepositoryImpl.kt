@@ -1,8 +1,10 @@
 package ru.netology.nmedia.repository
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.map
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import kotlinx.coroutines.delay
@@ -13,6 +15,8 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
@@ -23,16 +27,26 @@ import ru.netology.nmedia.util.AttachmentType
 import java.io.File
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class PostRepositoryImpl @Inject constructor(
     private val dao: PostDao,
-    private val apiService: PostApiService
+    private val apiService: PostApiService,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: AppDb
 ) : PostRepository {
 
+    @OptIn(ExperimentalPagingApi::class)
     override val data: Flow<PagingData<Post>> = Pager(
         config = PagingConfig(pageSize = 5, enablePlaceholders = false),
-        pagingSourceFactory = { PostPagingSource(apiService) },
-    ).flow
+        remoteMediator = PostRemoteMediator (
+            apiService = apiService,
+            dao = dao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb
+        ), pagingSourceFactory = { dao.getPagingSource() }
+    ).flow.map { it.map(PostEntity::toDto) }
 
     override val dataCount: Flow<List<Post>> = dao.getAllVisible()
         .map { it.map(PostEntity::toDto) }

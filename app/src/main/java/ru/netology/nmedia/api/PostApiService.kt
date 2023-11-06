@@ -19,10 +19,10 @@ interface PostApiService {
     @GET("posts/{id}/newer")
     suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
 
-    @GET("posts/{id}/before")
+    @GET("posts/{id}/before")   // получение постов старше, чем переданный id
     suspend fun getBefore(@Path("id") id: Long, @Query("count") count : Int): Response<List<Post>>
 
-    @GET("posts/{id}/after")
+    @GET("posts/{id}/after")    // получение постов младше, чем переданный id
     suspend fun getAfter(@Path("id") id: Long, @Query("count") count : Int): Response<List<Post>>
 
     @GET("posts/{id}")
