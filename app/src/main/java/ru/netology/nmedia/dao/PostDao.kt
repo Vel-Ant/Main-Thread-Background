@@ -2,9 +2,8 @@ package ru.netology.nmedia.dao
 
 import androidx.paging.PagingSource
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.entity.PostEntity
 
@@ -28,10 +27,10 @@ interface PostDao {
     @Query("UPDATE PostEntity SET hidden = 0 WHERE hidden = 1")
     suspend fun makeAllNewPostsVisible()
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insert(post: PostEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insert(posts: List<PostEntity>)
 
     @Query("UPDATE PostEntity SET content = :content WHERE id = :id")
