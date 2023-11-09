@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
+import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
@@ -90,7 +91,10 @@ class FeedFragment() : Fragment() {
         }, appAuth)
 
         with(binding) {
-            list.adapter = adapter
+            list.adapter = adapter.withLoadStateHeaderAndFooter(
+                header = PostLoadingStateAdapter { adapter.retry() },
+                footer = PostLoadingStateAdapter { adapter.retry() }
+            )
 
             adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -161,6 +165,8 @@ class FeedFragment() : Fragment() {
             retryButton.setOnClickListener {
                 adapter.refresh()
             }
+
+            swiperefresh.setOnRefreshListener(adapter::refresh) // запуск процесса обновления постов без смены авторизации
 
             fab.setOnClickListener {
                 if (authViewModel.authenticated) {

@@ -4,6 +4,7 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.insertSeparators
 import androidx.paging.map
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -17,7 +18,9 @@ import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dao.PostRemoteKeyDao
 import ru.netology.nmedia.db.AppDb
+import ru.netology.nmedia.dto.Ad
 import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
@@ -27,6 +30,7 @@ import java.io.File
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 class PostRepositoryImpl @Inject constructor(
@@ -37,18 +41,29 @@ class PostRepositoryImpl @Inject constructor(
 ) : PostRepository {
 
     @OptIn(ExperimentalPagingApi::class)
-    override val data: Flow<PagingData<Post>> = Pager(
+    override val data: Flow<PagingData<FeedItem>> = Pager(
         config = PagingConfig(pageSize = 5, enablePlaceholders = false),
-        remoteMediator = PostRemoteMediator (
+        remoteMediator = PostRemoteMediator(
             apiService = apiService,
             dao = dao,
             postRemoteKeyDao = postRemoteKeyDao,
             appDb = appDb
         ), pagingSourceFactory = { dao.getPagingSource() }
-    ).flow.map { it.map(PostEntity::toDto) }
+    ).flow.map {
+        it.map(PostEntity::toDto)
+            .insertSeparators { previous, _ ->
+                if (previous?.id?.rem(5) == 0L) {
+                    Ad(Random.nextLong(), "figma.jpg")
+                } else {
+                    null
+                }
+            }
+    }
+
 
     override val dataCount: Flow<List<Post>> = dao.getAllVisible()
         .map { it.map(PostEntity::toDto) }
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {

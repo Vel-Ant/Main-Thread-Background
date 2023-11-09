@@ -7,6 +7,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.errors.NumberResponseError
 import ru.netology.nmedia.model.FeedModel
@@ -53,9 +55,19 @@ class PostViewModel @Inject constructor(
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: Flow<PagingData<Post>> = appAuth.authState.flatMapLatest { token ->
-        repository.data.map { posts ->
-            posts.map { it.copy(ownedByMe = it.authorId == token?.id) }
+    private val cached = repository
+        .data
+        .cachedIn(viewModelScope)
+
+    val data: Flow<PagingData<FeedItem>> = appAuth.authState.flatMapLatest { token ->
+        cached.map { pagingData ->
+            pagingData.map { post ->
+                if (post is Post) {
+                    post.copy(ownedByMe = post.authorId == token?.id)
+                } else {
+                    post
+                }
+            }
         }
     }.flowOn(Dispatchers.Default)
 
@@ -67,11 +79,11 @@ class PostViewModel @Inject constructor(
 
     val dataCount: LiveData<FeedModel> = appAuth.authState.flatMapLatest { token ->
         repository.dataCount.map { posts ->
-                FeedModel(
-                    posts.map { it.copy(ownedByMe = it.authorId == token?.id) },
-                    posts.isEmpty()
-                )
-            }
+            FeedModel(
+                posts.map { it.copy(ownedByMe = it.authorId == token?.id) },
+                posts.isEmpty()
+            )
+        }
     }.asLiveData(Dispatchers.Default)
 
     val newerCount: LiveData<Int> = dataCount.switchMap {
