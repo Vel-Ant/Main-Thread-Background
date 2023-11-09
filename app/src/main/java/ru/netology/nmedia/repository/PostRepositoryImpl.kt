@@ -21,7 +21,6 @@ import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
-import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.errors.NumberResponseError
 import ru.netology.nmedia.util.AttachmentType
 import java.io.File
@@ -55,13 +54,11 @@ class PostRepositoryImpl @Inject constructor(
         while (true) {
             try {
                 delay(10_000)
-                val response = apiService.getNewer(id)
+                val response = apiService.getNewerCount(id)
 
-                val posts = response.body().orEmpty()
+                val count = response.body()
 
-                dao.insert(posts.toEntity(true))
-
-                emit(posts.size)
+                count?.count?.toInt()?.let { emit(it) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -69,22 +66,6 @@ class PostRepositoryImpl @Inject constructor(
                 e.printStackTrace()
             }
         }
-    }
-
-    override suspend fun getAll() {
-        val response = apiService.getAll()
-
-        if (!response.isSuccessful) {
-            throw NumberResponseError(response.code())
-        }
-
-        val posts = response.body() ?: throw RuntimeException("body is null")
-
-        dao.insert(posts.toEntity(false))
-    }
-
-    override suspend fun getAllNewPosts() {
-        dao.makeAllNewPostsVisible()
     }
 
     override suspend fun save(post: Post) {

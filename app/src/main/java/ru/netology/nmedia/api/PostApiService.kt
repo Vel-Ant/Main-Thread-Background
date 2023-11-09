@@ -5,19 +5,18 @@ import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 import ru.netology.nmedia.dto.Media
+import ru.netology.nmedia.dto.NewerCount
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PushToken
 import ru.netology.nmedia.dto.User
 
 interface PostApiService {
-    @GET("posts")
-    suspend fun getAll(): Response<List<Post>>
 
     @GET("posts/latest")
     suspend fun getLatest(@Query("count") count : Int): Response<List<Post>>
 
-    @GET("posts/{id}/newer")
-    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
+    @GET("posts/{id}/newer-count")
+    suspend fun getNewerCount(@Path("id") id: Long): Response<NewerCount>
 
     @GET("posts/{id}/before")   // получение постов старше, чем переданный id
     suspend fun getBefore(@Path("id") id: Long, @Query("count") count : Int): Response<List<Post>>
