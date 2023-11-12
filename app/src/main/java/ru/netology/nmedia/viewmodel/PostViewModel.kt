@@ -150,9 +150,7 @@ class PostViewModel @Inject constructor(
             return
         }
         edited.value = edited.value?.copy(
-            content = text,
-//            published = java.text.SimpleDateFormat("dd.MM.yyyy' в 'HH:mm:ss' '")
-//                .format(System.currentTimeMillis())
+            content = text
         )
     }
 
