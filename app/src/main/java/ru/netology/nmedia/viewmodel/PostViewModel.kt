@@ -29,6 +29,7 @@ import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.AttachmentType
 import ru.netology.nmedia.util.SingleLiveEvent
+import java.time.OffsetDateTime
 import javax.inject.Inject
 
 private val empty = Post(
@@ -37,7 +38,7 @@ private val empty = Post(
     author = "",
     authorAvatar = "",
     content = "",
-    published = "",
+    published = OffsetDateTime.now(),
     likedByMe = false,
     likes = 0,
     attachment = Attachment("", AttachmentType.IMAGE),

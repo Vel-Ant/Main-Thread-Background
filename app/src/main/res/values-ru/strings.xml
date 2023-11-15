@@ -44,5 +44,10 @@
     <string name="already_registered">I am already registered</string>
     <string name="textAvatar">AVATAR</string>
     <string name="notification_user_login">Пользователь с id:%1$s зашел</string>
-    <string name="retry">Retry</string>
+    <string name="retry">Повтор</string>
+    <string name="today">Сегодня</string>
+    <string name="yesterday">Вчера</string>
+    <string name="two_days_ago">Позавчера</string>
+    <string name="week_ago">Неделю назад</string>
+    <string name="two_weeks_ago">Две недели назад</string>
 </resources>

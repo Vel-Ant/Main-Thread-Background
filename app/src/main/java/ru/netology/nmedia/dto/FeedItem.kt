@@ -1,6 +1,7 @@
 package ru.netology.nmedia.dto
 
 import ru.netology.nmedia.util.AttachmentType
+import java.time.OffsetDateTime
 
 sealed interface FeedItem {
     val id: Long
@@ -11,7 +12,7 @@ data class Post(
     val author: String,
     val authorAvatar: String = "",
     val content: String,
-    val published: String,
+    val published: OffsetDateTime,
     val likedByMe: Boolean,
     val likes: Int = 0,
     var attachment: Attachment? = null,

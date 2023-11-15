@@ -15,11 +15,13 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.CardAdBinding
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Ad
+import ru.netology.nmedia.dto.DateSeparator
 import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.imageview.loadImageAttachment
 import ru.netology.nmedia.imageview.loadImageAvatar
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import java.time.OffsetDateTime
 import javax.inject.Inject
 
 interface OnInteractionListener {
@@ -44,22 +46,33 @@ class PostsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
             R.layout.card_post -> {
-                val binding = CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                val binding =
+                    CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
                 PostViewHolder(binding, onInteractionListener, appAuth)
             }
 
             R.layout.card_ad -> {
-                val binding = CardAdBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                val binding =
+                    CardAdBinding.inflate(LayoutInflater.from(parent.context), parent, false)
                 AdViewHolder(binding)
             }
+
             else -> error("unknown view type: $viewType")
         }
 
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val previosPosition = position - 1
+
+        val previosPost = if (previosPosition < 0) {
+            null
+        } else {
+            getItem(previosPosition) as? Post
+        }
+
         when (val item = getItem(position)) {
             is Ad -> (holder as? AdViewHolder)?.bind(item)
-            is Post -> (holder as? PostViewHolder)?.bind(item)
+            is Post -> (holder as? PostViewHolder)?.bind(previosPost, item)
             null -> error("unknown item type")
         }
     }
@@ -81,10 +94,26 @@ class PostViewHolder @Inject constructor(
 
     private val authViewModel: AuthViewModel = AuthViewModel(appAuth)
 
-    fun bind(post: Post) {
+    fun bind(previosPost: Post?, post: Post) {
+        val separator =
+            if (previosPost.notToday() && post.today()) {
+                DateSeparator.TODAY
+            } else if (previosPost.notYesterday() && post.yesterday()) {
+                DateSeparator.YESTERDAY
+            } else if (previosPost.notTwoDaysAgo() && post.twoDaysAgo()) {
+                DateSeparator.TWO_DAYS_AGO
+            } else if (previosPost.notWeekAgo() && post.weekAgo()) {
+                DateSeparator.WEEK_AGO
+            } else if (previosPost.notTwoWeeksAgo() && post.twoWeeksAgo()) {
+                DateSeparator.TWO_WEEKS_AGO
+            } else {
+                null
+            }
+
         binding.apply {
+            root.tag = separator
             author.text = post.author
-            published.text = post.published
+            published.text = post.published.toString()
             content.text = post.content
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
@@ -143,6 +172,33 @@ class PostViewHolder @Inject constructor(
         }
     }
 }
+
+private val today = OffsetDateTime.now()
+private val yesterday = today.minusDays(1)
+private val twoDaysAgo = today.minusDays(2)
+private val weekAgo = today.minusWeeks(1)
+private val twoWeeksAgo = today.minusWeeks(2)
+
+private fun Post.today(): Boolean =
+    today.year == published.year && today.dayOfYear == published.dayOfYear
+
+private fun Post.yesterday(): Boolean =
+    yesterday.year == published.year && yesterday.dayOfYear == published.dayOfYear
+
+private fun Post.twoDaysAgo(): Boolean =
+    twoDaysAgo.year == published.year && twoDaysAgo.dayOfYear == published.dayOfYear
+
+private fun Post.weekAgo(): Boolean =
+    weekAgo.year == published.year && weekAgo.dayOfYear == published.dayOfYear
+
+private fun Post.twoWeeksAgo(): Boolean =
+    twoWeeksAgo.year == published.year && twoWeeksAgo.dayOfYear == published.dayOfYear
+
+private fun Post?.notToday(): Boolean = this == null || !today()
+private fun Post?.notYesterday(): Boolean = this == null || !yesterday()
+private fun Post?.notTwoDaysAgo(): Boolean = this == null || !twoDaysAgo()
+private fun Post?.notWeekAgo(): Boolean = this == null || !weekAgo()
+private fun Post?.notTwoWeeksAgo(): Boolean = this == null || !twoWeeksAgo()
 
 class PostDiffCallback : DiffUtil.ItemCallback<FeedItem>() {
     override fun areItemsTheSame(oldItem: FeedItem, newItem: FeedItem): Boolean {

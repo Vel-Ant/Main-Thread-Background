@@ -60,7 +60,6 @@ class PostRepositoryImpl @Inject constructor(
             }
     }
 
-
     override val dataCount: Flow<List<Post>> = dao.getAllVisible()
         .map { it.map(PostEntity::toDto) }
 

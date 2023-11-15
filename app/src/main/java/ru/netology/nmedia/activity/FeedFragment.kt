@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.adapter.DateTimeDecoration
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -91,6 +92,11 @@ class FeedFragment() : Fragment() {
         }, appAuth)
 
         with(binding) {
+            list.addItemDecoration(DateTimeDecoration(
+                resources.getDimensionPixelSize(R.dimen.date_offset),
+                resources.getDimension(R.dimen.date_text_size)
+            ))
+
             list.adapter = adapter.withLoadStateHeaderAndFooter(
                 header = PostLoadingStateAdapter { adapter.retry() },
                 footer = PostLoadingStateAdapter { adapter.retry() }
